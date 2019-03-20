@@ -1,0 +1,80 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-19 09:32+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
+"<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+
+#: models.py:40
+msgid "title"
+msgstr "nadpis"
+
+#: models.py:41
+msgid "text"
+msgstr "text"
+
+#: models.py:42
+msgid "trigger action"
+msgstr "vyvolaná akce"
+
+#: models.py:43
+msgid "slug"
+msgstr "slug"
+
+#: models.py:46
+msgid "notification template"
+msgstr "šablona notifikace"
+
+#: models.py:47
+msgid "notification templates"
+msgstr "šablony notifikací"
+
+#: models.py:125
+msgid "recipient"
+msgstr "příjemce"
+
+#: models.py:131
+msgid "template"
+msgstr "šablona"
+
+#: models.py:133
+msgid "is read"
+msgstr "je přečtená"
+
+#: models.py:134
+msgid "is triggered"
+msgstr "je vyvolána akce"
+
+#: models.py:141 models.py:178
+msgid "notification"
+msgstr "notifikace"
+
+#: models.py:142
+msgid "notifications"
+msgstr "notifikace"
+
+#: models.py:173
+msgid "name"
+msgstr "jméno"
+
+#: models.py:180
+msgid "content type"
+msgstr "druh obsahu"
+
+#: models.py:181
+msgid "object ID"
+msgstr "ID objektu"

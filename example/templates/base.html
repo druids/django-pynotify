@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PyNotify example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <style>
+      .gray-box {
+        padding: 15px;
+        background: #eee;
+      }
+      .far {
+        width: 25px;
+      }
+      div.create-box {
+        text-align: right;
+      }
+      div.create-box .btn {
+        margin-top: 15px;
+      }
+      form tr {
+        vertical-align: top;
+      }
+      form tr, form th {
+        padding-bottom: 10px;
+        padding-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+      <h1>PyNotify example</h1>
+      <p>
+        This example illustrates usage of the PyNotify library. There are two users <b>Alice</b> and <b>Bob</b>. Both can view, create and modify articles. Every action performed on the article generates a new notification for the other user.
+      </p>
+      <div class="gray-box">
+        <p>Current user: <b>{{ request.user }}</b></p>
+        <a href="/?user=Alice" class="btn btn-primary">Switch to <b>Alice</b></a>
+        <a href="/?user=Bob" class="btn btn-primary">Switch to <b>Bob</b></a>
+      </div>
+
+      {% block content %}{% endblock content %}
+
+    </div>
+
+  </body>
+</html>
