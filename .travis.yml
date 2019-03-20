@@ -39,19 +39,3 @@ script:
 
 notifications:
     email: false
-
-# Assuming you have installed the travis-ci CLI tool, after you
-# create the Github repo and add it to Travis, run the
-# following command to finish PyPI deployment setup:
-# $ travis encrypt --add deploy.password
-
-deploy:
-  provider: pypi
-  distributions: sdist bdist_wheel
-  user: rubickcz
-  password:
-    secure: pge40eF8LKGdKzwe/5Jttp5lDxuI+XyqQYlsirs/DK871hMUXXwhg5Sra72+uKidabzqN4FE3sd4sS9Awr3YVbUMwHhP2KRZ9vTR1S4uPfEQST/HE8PaUmw3FasEQTgH4vCn+zhJI8N23jyN15S/qHBs1LLuOgD6W2C5Ei7DmAhh8fK3XsP40KB6SX+t6CntIFk7V//apGRPRl1kB2FqNzT5LfC9SFR6ApT+sDkqeTjGF/3wXgsyNQO36KvDuVWYY8VJ5U8htP97EtcRh0RCfdUlhSK5BaIZkSsJ55mfIR/8iGtSFXAUoisXTPOYL3GTKql5J/Leac9fPeIWre+H2pyRwBNPepnGkDRO/hx+yumEbKDZtbpBSK4CYOrWoBx0tMRnN3W8S37eRnMCkwwkYIsXrgnD6c3/fOqjqoO0weceytnQK+Q0YejMHn5A3ETiWVLQvE7ERnowzRff/sHKJyjujQsKaBaiVDhSuLMdFVr+jXV+F/BZaj46mfXyyrmbwrS/KT6fCMRvU69us6s63v3pE5jM71XE5hE4DFdgAY07ADVqCmYtF2S17xXRvIKA7nRbLJ2LXTKZOBq03/IsZlzM2dPrwKmxMZGahSAy9l1ck9jD+3QuqCZzNPh98DrO2EVZdkiABvg7u/WesZQUPvOGBRJFOP0W0pOSpq+lTOw=
-  on:
-    tags: true
-    repo: druids/django-pynotify
-    python: 3.6
