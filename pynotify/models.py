@@ -73,8 +73,8 @@ class NotificationTemplate(BaseModel):
 
 class NotificationManager(models.Manager):
 
-    def create(self, recipient, template, related_objects=None):
-        notification = super().create(recipient=recipient, template=template)
+    def create(self, recipient, template, related_objects=None, **kwargs):
+        notification = super().create(recipient=recipient, template=template, **kwargs)
 
         if related_objects is not None:
             if not isinstance(related_objects, dict):
