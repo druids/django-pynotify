@@ -142,14 +142,18 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         ordering = ('-created_at',)
 
     @cached_property
-    def _context(self):
-        context = {}
+    def related_objects_dict(self):
+        """
+        Returns related objects as a dictionary where key is name of the related object and value is the object itself.
+        This dictionary is used for rendering template fields.
+        """
+        output = {}
         for obj in self.related_objects.all():
-            context[obj.name] = obj.content_object
-        return context
+            output[obj.name] = obj.content_object
+        return output
 
     def _render(self, field):
-        return self.template.render(field, self._context)
+        return self.template.render(field, self.related_objects_dict)
 
 
 class NotificationRelatedObject(BaseModel):
