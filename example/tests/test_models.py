@@ -109,23 +109,26 @@ class NotificationTestCase(TestCase):
         self.assertEqual(self.notification.text, 'James created a new article named The King Of The Cats.')
 
     def test_context_should_contain_related_objects(self):
-        self.assertEqual(self.notification._context, {'article': self.article, 'random_user': self.random_user})
+        self.assertEqual(
+            self.notification.related_objects_dict,
+            {'article': self.article, 'random_user': self.random_user}
+        )
 
     def test_context_should_be_cached(self):
         # force context to load
-        self.notification._context
+        self.notification.related_objects_dict
         self.random_user.username = 'Mr.Random2'
         self.random_user.save()
 
-        self.assertEqual(self.notification._context['random_user'].username, 'Mr.Random')
+        self.assertEqual(self.notification.related_objects_dict['random_user'].username, 'Mr.Random')
 
         self.notification.refresh_from_db()
-        self.assertEqual(self.notification._context['random_user'].username, 'Mr.Random2')
+        self.assertEqual(self.notification.related_objects_dict['random_user'].username, 'Mr.Random2')
 
     def test_context_should_not_contain_deleted_objects(self):
         self.random_user.delete()
         self.notification.refresh_from_db()
-        self.assertEqual(self.notification._context, {'article': self.article, 'random_user': None})
+        self.assertEqual(self.notification.related_objects_dict, {'article': self.article, 'random_user': None})
 
     def test_creating_notification_should_not_be_possible_with_related_objects_in_invalid_format(self):
         INVALID_RELATED_OBJECTS = (
