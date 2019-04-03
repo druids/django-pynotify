@@ -57,6 +57,9 @@ class TestDataHandler(BaseHandler):
     def _can_dispatch_notification(self, notification, dispatcher):
         return notification.recipient.username != 'John'
 
+    def _can_handle(self):
+        return self.signal_kwargs.get('can_handle', True)
+
     class Meta:
         signal = test_signal_data
 
@@ -136,6 +139,11 @@ class HandlerTestCase(TestCase):
         test_signal_data.send(sender=None, recipients=[self.user1])
         notifications = self.user1.notifications.all()
         self.assertEqual(notifications[0].template, notifications[1].template)
+
+        # Test _can_handle() method is used
+        self.user1.notifications.all().delete()
+        test_signal_data.send(sender=None, recipients=[self.user1], can_handle=False)
+        self.assertEqual(self.user1.notifications.count(), 0)
 
     def test_handler_should_create_notification_using_template_slug(self):
         test_signal_slug.send(sender=MockSender, recipients=[self.user1])
