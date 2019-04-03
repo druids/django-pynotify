@@ -15,6 +15,11 @@ You can configure the library in Django settings. Following options are availabl
 
     Import path to a Celery task used in asynchronous mode. See :ref:`async`.
 
+* ``PYNOTIFY_ENABLED`` (default: ``True``)
+
+    Boolean indicating if library functionality, i.e. creating of notifications, is enabled. More specifically, if set to
+    ``False``, receiver will not be called upon signal reception.
+
 * ``PYNOTIFY_RECEIVER`` (default: ``pynotify.receivers.SynchronousReceiver``)
 
     Import path to a receiver class.

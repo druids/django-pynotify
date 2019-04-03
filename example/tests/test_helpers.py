@@ -72,6 +72,13 @@ class HelpersTestCase(TestCase):
         test_signal.send(sender='abc', abc=123)
         self.assertEqual(MockHandler1.signal_kwargs, {'abc': 123})
 
+    @override_settings(PYNOTIFY_ENABLED=False)
+    def test_receive_should_not_call_handler_if_pynotify_not_enabled(self):
+        MockHandler1.signal_kwargs = 'constant'
+        register(test_signal, MockHandler1)
+        test_signal.send(sender='abc', abc=123)
+        self.assertEqual(MockHandler1.signal_kwargs, 'constant')
+
     @override_settings(PYNOTIFY_RECEIVER='pynotify.receivers.SynchronousReceiver')
     def test_receive_should_not_call_handler_if_disallowed_sender_sent_the_signal(self):
         MockHandler1.signal_kwargs = 'constant'

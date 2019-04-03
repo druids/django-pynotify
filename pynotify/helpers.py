@@ -46,6 +46,9 @@ def receive(sender, **kwargs):
     """
     Initiates processing of the signal by notification handlers through a receiver.
     """
+    if not settings.ENABLED:
+        return
+
     signal = kwargs.pop('signal')
     receiver_class = locate(settings.RECEIVER)
 
