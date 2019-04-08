@@ -2,6 +2,12 @@
 History
 =======
 
+0.1.4 (2019-04-08)
+------------------
+
+* Add ``_can_handle()`` method to ``BaseHandler``
+* Add ``PYNOTIFY_ENABLED`` setting
+
 0.1.3 (2019-04-01)
 ------------------
 
