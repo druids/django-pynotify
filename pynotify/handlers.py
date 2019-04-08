@@ -17,20 +17,20 @@ class HandlerMeta(type):
         # register only descendants of BaseHandler
         if bases:
             if not getattr(new_class, 'Meta', None):
-                raise ImproperlyConfigured('Handler must have Meta class defined.')
+                raise ImproperlyConfigured('{} must have Meta class defined.'.format(name))
 
             if getattr(new_class.Meta, 'abstract', False):
                 # delete the abstract attribute so it is not inherited by child classes
                 delattr(new_class.Meta, 'abstract')
             else:
                 if not getattr(new_class, 'Meta', None) or not getattr(new_class.Meta, 'signal', None):
-                    raise ImproperlyConfigured('No signal defined in handler\'s Meta.')
+                    raise ImproperlyConfigured('No signal defined in {}\'s Meta.'.format(name))
 
                 if (
                     getattr(new_class.Meta, 'allowed_senders', None)
                     and not isinstance(new_class.Meta.allowed_senders, Iterable)
                 ):
-                    raise ImproperlyConfigured('Attribute "allowed_senders" must be iterable.')
+                    raise ImproperlyConfigured('{}\'s attribute "allowed_senders" must be iterable.'.format(name))
 
                 register(
                     signal=new_class.Meta.signal,
@@ -110,17 +110,24 @@ class BaseHandler(metaclass=HandlerMeta):
         if self._can_dispatch_notification(notification, dispatcher):
             dispatcher.dispatch(notification)
 
+    def _can_handle(self):
+        """
+        Returns ``True`` if handler should handle creating of notification(s).
+        """
+        return True
+
     def handle(self, signal_kwargs):
         """
         Handles creation of notifications from ``signal_kwargs``.
         """
         self.signal_kwargs = signal_kwargs
-        for recipient in self.get_recipients():
-            notification = self._create_notification(recipient)
+        if self._can_handle():
+            for recipient in self.get_recipients():
+                notification = self._create_notification(recipient)
 
-            if notification:
-                for dispatcher in self.dispatchers:
-                    self._dispatch_notification(notification, dispatcher)
+                if notification:
+                    for dispatcher in self.dispatchers:
+                        self._dispatch_notification(notification, dispatcher)
 
     def get_recipients(self):
         """

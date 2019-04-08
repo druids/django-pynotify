@@ -9,6 +9,7 @@ class Settings:
     DEFAULTS = {
         'AUTOLOAD_APPS': None,
         'CELERY_TASK': 'pynotify.tasks.notification_task',
+        'ENABLED': True,
         'RECEIVER': 'pynotify.receivers.SynchronousReceiver',
         'TEMPLATE_CHECK': False,
         'TEMPLATE_TRANSLATE': False,
