@@ -143,6 +143,10 @@ accessed through :class:`~pynotify.models.Notification`, are rendered using Djan
 with related objects. This is very convenient since notifications will always stay up to date, even if related object
 changes.
 
+In case you want to "freeze" the values used in template strings (i.e. not reflect changes made in related objects),
+define :meth:`~pynotify.models.Notification.get_extra_data`, which should return a dict of JSON serizalizable values.
+These extra data are also put into template context, together with related objects.
+
 Instead of using :meth:`~pynotify.handlers.BaseHandler.get_template_data`, you can define handler's attribute
 ``template_slug``. This is a better option in case you prefer to often change template strings via administration
 interface.  Note, that the template referenced by slug must already exist - it won't be automatically created. You can

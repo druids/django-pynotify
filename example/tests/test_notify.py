@@ -10,10 +10,11 @@ class NotifyTestCase(TestCase):
         user = User.objects.create_user('John')
         notify(
             recipients=[user],
-            title='Hello {{user}}!',
+            title='{{greeting}} {{user}}!',
             text='Welcome to PyNotify!',
             trigger_action='http://localhost/',
-            related_objects={'user': user}
+            related_objects={'user': user},
+            extra_data={'greeting': 'Hello'},
         )
 
         notification = user.notifications.get()

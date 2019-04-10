@@ -80,7 +80,7 @@ Ready to contribute? Here's how to set up **Django PyNotify** for local developm
 
    To create migrations, run::
 
-    $ make mamemigrations
+    $ make makemigrations
 
    To make translations, run::
 
