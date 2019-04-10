@@ -59,13 +59,11 @@ class BaseHandler(metaclass=HandlerMeta):
     dispatcher_classes = None
     template_slug = None
 
-    def __init__(self):
-        self._init_dispatchers()
-
     @cached_property
     def _template(self):
-        if self.template_slug:
-            template = NotificationTemplate.objects.get(slug=self.template_slug)
+        template_slug = self.get_template_slug()
+        if template_slug:
+            template = NotificationTemplate.objects.get(slug=template_slug)
         else:
             template, _ = NotificationTemplate.objects.get_or_create(**self.get_template_data())
 
@@ -73,8 +71,9 @@ class BaseHandler(metaclass=HandlerMeta):
 
     def _init_dispatchers(self):
         self.dispatchers = []
-        if self.dispatcher_classes:
-            for dispatcher_class in self.dispatcher_classes:
+        dispatcher_classes = self.get_dispatcher_classes()
+        if dispatcher_classes:
+            for dispatcher_class in dispatcher_classes:
                 self.dispatchers.append(self._init_dispatcher(dispatcher_class))
 
     def _init_dispatcher(self, dispatcher_class):
@@ -123,6 +122,7 @@ class BaseHandler(metaclass=HandlerMeta):
         """
         self.signal_kwargs = signal_kwargs
         if self._can_handle():
+            self._init_dispatchers()
             for recipient in self.get_recipients():
                 notification = self._create_notification(recipient)
 
@@ -138,7 +138,7 @@ class BaseHandler(metaclass=HandlerMeta):
 
     def get_template_data(self):
         """
-        Returns kwargs used to create a template.
+        Returns kwargs used to create a template. Not called if template slug is used.
         """
         raise NotImplementedError()
 
@@ -153,3 +153,15 @@ class BaseHandler(metaclass=HandlerMeta):
         Returns a dictionary with extra data, the values must be JSON serializable.
         """
         return None
+
+    def get_template_slug(self):
+        """
+        Returns slug of a template to be used.
+        """
+        return self.template_slug
+
+    def get_dispatcher_classes(self):
+        """
+        Returns iterable of dispatcher classes used to dispatch notification(s).
+        """
+        return self.dispatcher_classes
