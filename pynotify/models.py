@@ -69,7 +69,7 @@ class NotificationTemplate(BaseModel):
                 if context.get(var) is None:
                     raise MissingContextVariableError(field, var)
 
-        return Template(template_string).render(Context(context))
+        return Template('{}{}'.format(settings.TEMPLATE_PREFIX, template_string)).render(Context(context))
 
 
 class NotificationManager(models.Manager):
