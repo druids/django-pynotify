@@ -87,6 +87,7 @@ class NotificationTestCase(TestCase):
                 'article': self.article,
                 'random_user': self.random_user,
             },
+            extra_data={'some_value': 123}
         )
 
     def test_generated_fields_should_use_template_for_rendering(self):
@@ -108,27 +109,39 @@ class NotificationTestCase(TestCase):
         self.assertEqual(self.notification.title, 'New article: The King Of The Cats')
         self.assertEqual(self.notification.text, 'James created a new article named The King Of The Cats.')
 
-    def test_context_should_contain_related_objects(self):
+    def test_related_objects_and_extra_data_should_not_contain_same_keys(self):
+        self.notification.set_extra_data({'article': 123})
+        with self.assertRaises(ValueError):
+            self.notification.save()
+
+    def test_context_should_contain_related_objects_and_extra_data(self):
         self.assertEqual(
-            self.notification.related_objects_dict,
-            {'article': self.article, 'random_user': self.random_user}
+            self.notification.context,
+            {'article': self.article, 'random_user': self.random_user, 'some_value': 123}
         )
 
     def test_context_should_be_cached(self):
         # force context to load
-        self.notification.related_objects_dict
+        self.notification.context
         self.random_user.username = 'Mr.Random2'
         self.random_user.save()
 
-        self.assertEqual(self.notification.related_objects_dict['random_user'].username, 'Mr.Random')
+        self.assertEqual(self.notification.context['random_user'].username, 'Mr.Random')
 
         self.notification.refresh_from_db()
-        self.assertEqual(self.notification.related_objects_dict['random_user'].username, 'Mr.Random2')
+        self.assertEqual(self.notification.context['random_user'].username, 'Mr.Random2')
 
     def test_context_should_not_contain_deleted_objects(self):
         self.random_user.delete()
         self.notification.refresh_from_db()
-        self.assertEqual(self.notification.related_objects_dict, {'article': self.article, 'random_user': None})
+        self.assertEqual(
+            self.notification.context,
+            {
+                'article': self.article,
+                'random_user': None,
+                'some_value': 123,
+            }
+        )
 
     def test_creating_notification_should_not_be_possible_with_related_objects_in_invalid_format(self):
         INVALID_RELATED_OBJECTS = (

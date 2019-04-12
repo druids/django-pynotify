@@ -51,6 +51,9 @@ class TestDataHandler(BaseHandler):
     def get_related_objects(self):
         return {'first_recipient': self.signal_kwargs['recipients'][0]}
 
+    def get_extra_data(self):
+        return {'some_value': 123}
+
     def _can_create_notification(self, recipient):
         return recipient.username != 'James'
 
@@ -128,6 +131,7 @@ class HandlerTestCase(TestCase):
 
             self.assertEqual(notification.recipient, user)
             self.assertEqual(notification.title, 'Hello data!')
+            self.assertEqual(notification.get_extra_data(), {'some_value': 123})
             self.assertEqual(related_object.name, 'first_recipient')
             self.assertEqual(related_object.content_object, self.user1)
             if user.username == 'Jack':

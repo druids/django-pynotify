@@ -99,4 +99,4 @@ mo:
 	cd pynotify && django-admin compilemessages
 
 makemigrations:
-	cd example && ./manage.py migrate && ./manage.py migrate pynotify
+	cd example && ./manage.py makemigrations && ./manage.py makemigrations pynotify

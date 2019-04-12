@@ -94,7 +94,8 @@ class BaseHandler(metaclass=HandlerMeta):
             return Notification.objects.create(
                 recipient=recipient,
                 template=self._template,
-                related_objects=self.get_related_objects()
+                related_objects=self.get_related_objects(),
+                extra_data=self.get_extra_data(),
             )
 
     def _can_dispatch_notification(self, notification, dispatcher):
@@ -145,4 +146,10 @@ class BaseHandler(metaclass=HandlerMeta):
         """
         Returns a dictionary of related objects in format {"name": object}.
         """
-        return {}
+        return None
+
+    def get_extra_data(self):
+        """
+        Returns a dictionary with extra data, the values must be JSON serializable.
+        """
+        return None

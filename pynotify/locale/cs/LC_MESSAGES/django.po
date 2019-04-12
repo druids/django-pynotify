@@ -67,6 +67,10 @@ msgstr "notifikace"
 msgid "notifications"
 msgstr "notifikace"
 
+#: models.py:143
+msgid "extra data"
+msgstr "extra data"
+
 #: models.py:173
 msgid "name"
 msgstr "jméno"

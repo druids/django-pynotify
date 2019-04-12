@@ -1,3 +1,4 @@
+import json
 import re
 
 from chamber.models import SmartModel, SmartModelBase
@@ -73,7 +74,7 @@ class NotificationTemplate(BaseModel):
 
 class NotificationManager(models.Manager):
 
-    def create(self, recipient, template, related_objects=None, **kwargs):
+    def create(self, recipient, template, related_objects=None, extra_data=None, **kwargs):
         notification = super().create(recipient=recipient, template=template, **kwargs)
 
         if related_objects is not None:
@@ -85,6 +86,10 @@ class NotificationManager(models.Manager):
                     raise TypeError('Related object must be an instance of model.')
 
                 NotificationRelatedObject.objects.create(name=name, notification=notification, content_object=object)
+
+        if extra_data is not None:
+            notification.set_extra_data(extra_data)
+            notification.save()
 
         return notification
 
@@ -111,13 +116,15 @@ class Notification(BaseModel, metaclass=NotificationMeta):
 
     Attributes specified in ``NotificationTemplate.TEMPLATE_FIELDS`` are also available here, as generated properties,
     that are evaluated at runtime and will return rendered field from the associated template. By default, the context
-    used for rendering is filled with related objects, so they can be referenced in the template by their name.
+    used for rendering is filled with related objects and extra data, so they can be referenced in the template by their
+    name/key.
 
     Attributes:
         recipient: Recipient of the notification.
         template: Template used to render generated notification fields.
         is_read: Boolean flag indicating that recipitent has seen the notification.
         is_triggered: Boolean flag indicating that recipient has triggered the notification (e.g. clicked/tapped)
+        extra_data: JSON serialized dictionary with extra data.
     """
     recipient = models.ForeignKey(
         django_settings.AUTH_USER_MODEL,
@@ -133,6 +140,7 @@ class Notification(BaseModel, metaclass=NotificationMeta):
     )
     is_read = models.BooleanField(default=False, verbose_name=_l('is read'))
     is_triggered = models.BooleanField(default=False, verbose_name=_l('is triggered'))
+    extra_data = models.TextField(null=True, blank=True, verbose_name=_l('extra data'))
 
     objects = NotificationManager()
 
@@ -141,19 +149,50 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         verbose_name_plural = _l('notifications')
         ordering = ('-created_at',)
 
+    def _render(self, field):
+        return self.template.render(field, self.context)
+
+    def _pre_save(self, *args, **kwargs):
+        keys = set(self.get_extra_data()) & set(obj.name for obj in self.related_objects.all())
+        if keys:
+            raise ValueError('Related objects and extra data contain same key(s): {}'.format(', '.join(keys)))
+
     @cached_property
     def related_objects_dict(self):
         """
         Returns related objects as a dictionary where key is name of the related object and value is the object itself.
-        This dictionary is used for rendering template fields.
         """
         output = {}
         for obj in self.related_objects.all():
             output[obj.name] = obj.content_object
         return output
 
-    def _render(self, field):
-        return self.template.render(field, self.related_objects_dict)
+    @property
+    def context(self):
+        """
+        Returns context dictionary used for rendering the template.
+        """
+        return {**self.related_objects_dict, **self.get_extra_data()}
+
+    def set_extra_data(self, extra_data):
+        """
+        Setter for ``extra_data`` field.
+
+        Arguments:
+            extra_data: Dictionary of JSON serializable values.
+        """
+        if not isinstance(extra_data, dict):
+            raise ValueError('Extra data must be a dictionary.')
+        self.extra_data = json.dumps(extra_data)
+
+    def get_extra_data(self):
+        """
+        Getter for ``extra_data`` field.
+
+        Returns:
+            Dictionary with extra data.
+        """
+        return json.loads(self.extra_data) if self.extra_data is not None else {}
 
 
 class NotificationRelatedObject(BaseModel):
