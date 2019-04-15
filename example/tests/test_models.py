@@ -65,6 +65,11 @@ class NotificationTemplateTestCase(TestCase):
 
         activate('en')
 
+    @override_settings(PYNOTIFY_TEMPLATE_PREFIX='{% load example_tags %}')
+    def test_template_should_be_prefixed_with_string_from_configuration(self):
+        self.template.title = '{% greeting %}'
+        self.assertEqual(self.render('title'), 'Howdy!')
+
 
 class NotificationTestCase(TestCase):
 

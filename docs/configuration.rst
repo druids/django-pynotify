@@ -29,6 +29,10 @@ You can configure the library in Django settings. Following options are availabl
     Boolean indicating if template string should be checked before rendering. If any related object used in the template
     string is missing, :class:`~pynotify.exceptions.MissingContextVariableError` will be raised.
 
+* ``PYNOTIFY_TEMPLATE_PREFIX`` (default: ``''``)
+
+    String that is prepended to any template just before rendering. Can be used to load custom tags/filters.
+
 * ``PYNOTIFY_TEMPLATE_TRANSLATE`` (default: ``False``)
 
     Boolean indicating if template string should be translated via ``ugettext()`` before rendering.

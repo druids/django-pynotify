@@ -12,6 +12,7 @@ class Settings:
         'ENABLED': True,
         'RECEIVER': 'pynotify.receivers.SynchronousReceiver',
         'TEMPLATE_CHECK': False,
+        'TEMPLATE_PREFIX': '',
         'TEMPLATE_TRANSLATE': False,
     }
 
