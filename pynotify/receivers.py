@@ -19,7 +19,7 @@ class BaseReceiver:
         """
         This method should implement passing ``signal_kwargs`` to the handler.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
 class SynchronousReceiver(BaseReceiver):

@@ -61,7 +61,7 @@ class TestDataHandler(BaseHandler):
         return notification.recipient.username != 'John'
 
     def _can_handle(self):
-        return self.signal_kwargs.get('can_handle', True)
+        return super()._can_handle() and self.signal_kwargs.get('can_handle', True)
 
     class Meta:
         signal = test_signal_data

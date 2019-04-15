@@ -134,13 +134,13 @@ class BaseHandler(metaclass=HandlerMeta):
         """
         Returns an iterable of recipients for which notification will be created.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def get_template_data(self):
         """
         Returns kwargs used to create a template.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def get_related_objects(self):
         """
