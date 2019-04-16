@@ -2,6 +2,13 @@
 History
 =======
 
+0.1.6 (2019-04-16)
+------------------
+
+* Add ``PYNOTIFY_TEMPLATE_PREFIX`` config option
+* Add methods ``get_template_slug()`` and ``get_dispatcher_classes()`` to ``BaseHandler``
+* Add coveralls.io integration
+
 0.1.5 (2019-04-12)
 ------------------
 
