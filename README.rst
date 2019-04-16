@@ -13,6 +13,9 @@ Django PyNotify
         :target: https://django-pynotify.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://coveralls.io/repos/github/druids/django-pynotify/badge.svg?branch=master
+        :target: https://coveralls.io/github/druids/django-pynotify?branch=master
+        :alt: Code coverage
 
 General purpose notification library for Django.
 

@@ -70,6 +70,17 @@ class NotificationTemplateTestCase(TestCase):
         self.template.title = '{% greeting %}'
         self.assertEqual(self.render('title'), 'Howdy!')
 
+    def test_template_should_have_string_representation(self):
+        self.assertEqual(str(self.template), 'notification template #{}'.format(self.template.pk))
+
+        self.template.slug = 'test-template'
+        self.template.save()
+
+        self.assertEqual(str(self.template), 'notification template #{} ({})'.format(
+            self.template.pk,
+            self.template.slug,
+        ))
+
 
 class NotificationTestCase(TestCase):
 
@@ -113,6 +124,10 @@ class NotificationTestCase(TestCase):
 
         self.assertEqual(self.notification.title, 'New article: The King Of The Cats')
         self.assertEqual(self.notification.text, 'James created a new article named The King Of The Cats.')
+
+    def test_extra_data_should_be_dictionary(self):
+        with self.assertRaises(ValueError):
+            self.notification.set_extra_data(1000)
 
     def test_related_objects_and_extra_data_should_not_contain_same_keys(self):
         self.notification.set_extra_data({'article': 123})
@@ -164,3 +179,6 @@ class NotificationTestCase(TestCase):
                     template=self.template,
                     related_objects=related_objects
                 )
+
+    def test_notification_should_have_string_representation(self):
+        self.assertEqual(str(self.notification), 'notification #{}'.format(self.notification.pk))

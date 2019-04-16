@@ -13,13 +13,13 @@ class BaseSerializer:
         """
         This method should return serialized ``signal_kwargs``.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def deserialize(self, signal_kwargs):
         """
         This method should return deserialized ``signal_kwargs``.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
 class ModelSerializer:

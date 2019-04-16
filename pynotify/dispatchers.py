@@ -6,4 +6,4 @@ class BaseDispatcher:
         """
         This method should implement actual sending of ``notification``.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
