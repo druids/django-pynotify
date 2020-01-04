@@ -3,11 +3,43 @@ import logging
 from pydoc import locate
 
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.translation import ugettext as _
 
 from .config import settings
 
 
 logger = logging.getLogger(__name__)
+
+
+class SecureRelatedObject:
+    """
+    Security proxy class allowing to access only string representation of the related object and a set of attributes
+    defined in `RELATED_OBJECTS_ALLOWED_ATTRS` settings.
+    """
+    def __init__(self, related_object):
+        self._object = related_object
+
+    def __getattr__(self, name):
+        if name in settings.RELATED_OBJECTS_ALLOWED_ATTRIBUTES:
+            return getattr(self._object, name)
+        else:
+            raise AttributeError('Attribute "{}" is not allowed to be accessed on related object.'.format(name))
+
+    def __str__(self):
+        return self._object.__str__()
+
+
+class DeletedRelatedObject:
+    """
+    Placeholder class that substitutes deleted related object and returns:
+        * "[DELETED]" as its string representation
+        * itself for any attribute accessed
+    """
+    def __getattr__(self, name):
+        return self
+
+    def __str__(self):
+        return _('[DELETED]')
 
 
 class SignalMap:

@@ -11,6 +11,7 @@ class Settings:
         'CELERY_TASK': 'pynotify.tasks.notification_task',
         'ENABLED': True,
         'RECEIVER': 'pynotify.receivers.SynchronousReceiver',
+        'RELATED_OBJECTS_ALLOWED_ATTRIBUTES': {'get_absolute_url', },
         'TEMPLATE_CHECK': False,
         'TEMPLATE_PREFIX': '',
         'TEMPLATE_TRANSLATE': False,

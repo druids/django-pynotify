@@ -24,7 +24,8 @@ class BaseArticleHandler(BaseHandler):
 
     def get_related_objects(self):
         return {
-            'article': self.signal_kwargs['instance']
+            'article': self.signal_kwargs['instance'],
+            'author': self.signal_kwargs['instance'].author
         }
 
     class Meta:
@@ -38,7 +39,7 @@ class ArticleCreatedHandler(BaseArticleHandler):
     Creates a notification when a new Article is created.
     """
     def get_title(self):
-        return '<b>{{article.author}}</b> created a new article {{article}}'
+        return '<b>{{author}}</b> created a new article {{article}}'
 
     def handle(self, signal_kwargs):
         if signal_kwargs['created']:
@@ -50,7 +51,7 @@ class ArticleUpdatedHandler(BaseArticleHandler):
     Creates a notification when existing Article is updated.
     """
     def get_title(self):
-        return '<b>{{article.author}}</b> updated article {{article}}'
+        return '<b>{{author}}</b> updated article {{article}}'
 
     def handle(self, signal_kwargs):
         if not signal_kwargs['created']:
