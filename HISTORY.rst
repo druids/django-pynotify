@@ -7,6 +7,7 @@ not released yet
 
 * Add support for Python 3.8 and Django 2.2
 * Fix generating of translations
+* Allow unnamed related objects to be passed in a list
 
 0.1.6 (2019-04-16)
 ------------------

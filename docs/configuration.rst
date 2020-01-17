@@ -26,8 +26,8 @@ You can configure the library in Django settings. Following options are availabl
 
 * ``PYNOTIFY_TEMPLATE_CHECK`` (default: ``False``)
 
-    Boolean indicating if template string should be checked before rendering. If any related object used in the template
-    string is missing, :class:`~pynotify.exceptions.MissingContextVariableError` will be raised.
+    Boolean indicating if template string should be checked before rendering. If any named related object or extra data
+    used in the template string is missing, :class:`~pynotify.exceptions.MissingContextVariableError` will be raised.
 
 * ``PYNOTIFY_TEMPLATE_PREFIX`` (default: ``''``)
 

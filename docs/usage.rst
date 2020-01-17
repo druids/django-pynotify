@@ -140,12 +140,12 @@ illustrated with an example. We will improve the "article viewed" notification f
 
 As you can see, we have changed the template strings to true Django templates, because the template fields, when
 accessed through :class:`~pynotify.models.Notification`, are rendered using Django template engine with context filled
-with related objects. This is very convenient since notifications will always stay up to date, even if related object
-changes.
+with named related objects. This is very convenient since notifications will always stay up to date, even if related
+object changes.
 
 In case you want to "freeze" the values used in template strings (i.e. not reflect changes made in related objects),
 define :meth:`~pynotify.models.Notification.get_extra_data`, which should return a dict of JSON serizalizable values.
-These extra data are also put into template context, together with related objects.
+These extra data are also put into template context, together with named related objects.
 
 Instead of using :meth:`~pynotify.handlers.BaseHandler.get_template_data`, you can define handler's attribute
 ``template_slug``. This is a better option in case you prefer to often change template strings via administration
