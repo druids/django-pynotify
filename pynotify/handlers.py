@@ -4,7 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import cached_property
 
 from .helpers import register
-from .models import Notification, NotificationTemplate
+from .models import AdminNotificationTemplate, Notification, NotificationTemplate
 
 
 class HandlerMeta(type):
@@ -53,8 +53,8 @@ class BaseHandler(metaclass=HandlerMeta):
 
     Attributes:
         dispatcher_classes: An iterable of dispatcher classes that will be used to dispatch each notification.
-        template_slug: Slug of an existing template to be used. If not defined, you must define ``get_template_data()``
-            method.
+        template_slug: Slug of an existing admin template to be used. If not defined, you must define
+            ``get_template_data()`` method.
     """
     dispatcher_classes = None
     template_slug = None
@@ -63,7 +63,13 @@ class BaseHandler(metaclass=HandlerMeta):
     def _template(self):
         template_slug = self.get_template_slug()
         if template_slug:
-            template = NotificationTemplate.objects.get(slug=template_slug)
+            admin_template = AdminNotificationTemplate.objects.get(slug=template_slug)
+            template, _ = NotificationTemplate.objects.get_or_create(
+                title=admin_template.title,
+                text=admin_template.text,
+                trigger_action=admin_template.trigger_action,
+                admin_template=admin_template,
+            )
         else:
             template, _ = NotificationTemplate.objects.get_or_create(**self.get_template_data())
 
@@ -157,7 +163,7 @@ class BaseHandler(metaclass=HandlerMeta):
 
     def get_template_slug(self):
         """
-        Returns slug of a template to be used.
+        Returns slug of an admin template to be used.
         """
         return self.template_slug
 

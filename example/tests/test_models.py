@@ -1,11 +1,24 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
-from django.utils.translation import ugettext_noop, activate
+from django.utils.translation import override, ugettext_noop
 
 from pynotify.exceptions import MissingContextVariableError
-from pynotify.models import Notification, NotificationTemplate
+from pynotify.models import AdminNotificationTemplate, Notification, NotificationTemplate
 
 from articles.models import Article
+
+
+class AdminNotificationTemplateTestCase(TestCase):
+
+    def test_admin_template_should_have_string_representation(self):
+        template = AdminNotificationTemplate.objects.create(
+            title='Hello!',
+            slug='test-template',
+        )
+        self.assertEqual(str(template), 'admin notification template #{} ({})'.format(
+            template.pk,
+            template.slug,
+        ))
 
 
 class NotificationTemplateTestCase(TestCase):
@@ -55,15 +68,12 @@ class NotificationTemplateTestCase(TestCase):
 
     @override_settings(PYNOTIFY_TEMPLATE_TRANSLATE=True)
     def test_template_should_be_translated(self):
-        activate('cs')
+        with override('cs'):
+            self.assertEqual(self.render('title'), 'Nový článek: The Old Witch')
 
-        self.assertEqual(self.render('title'), 'Nový článek: The Old Witch')
-
-        # test with setting off
-        with override_settings(PYNOTIFY_TEMPLATE_TRANSLATE=False):
-            self.assertEqual(self.render('title'), 'New article: The Old Witch')
-
-        activate('en')
+            # test with setting off
+            with override_settings(PYNOTIFY_TEMPLATE_TRANSLATE=False):
+                self.assertEqual(self.render('title'), 'New article: The Old Witch')
 
     @override_settings(PYNOTIFY_TEMPLATE_PREFIX='{% load example_tags %}')
     def test_template_should_be_prefixed_with_string_from_configuration(self):
@@ -73,13 +83,10 @@ class NotificationTemplateTestCase(TestCase):
     def test_template_should_have_string_representation(self):
         self.assertEqual(str(self.template), 'notification template #{}'.format(self.template.pk))
 
-        self.template.slug = 'test-template'
-        self.template.save()
-
-        self.assertEqual(str(self.template), 'notification template #{} ({})'.format(
-            self.template.pk,
-            self.template.slug,
-        ))
+    def test_template_should_return_slug_of_the_admin_template(self):
+        self.assertEqual(self.template.slug, None)
+        self.template.admin_template = AdminNotificationTemplate.objects.create(title='Hello!', slug='test-template')
+        self.assertEqual(self.template.slug, 'test-template')
 
 
 class NotificationTestCase(TestCase):
