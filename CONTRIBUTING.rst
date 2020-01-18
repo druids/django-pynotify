@@ -116,7 +116,7 @@ Before you submit a pull request, check that it meets these guidelines:
    docstring, and add the feature to the list in README.rst. Also consider inplementing the new functionality in the
    example project.
 
-3. The pull request should work for Python 3.6 and 3.7, and for PyPy. Check
+3. The pull request should work for all supported Python versions, and for PyPy. Check
    https://travis-ci.org/druids/django-pynotify/pull_requests and make sure that the tests pass for all supported
    Python versions.
 

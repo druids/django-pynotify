@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Add support for Python 3.8 and Django 2.2
+
 0.1.6 (2019-04-16)
 ------------------
 
