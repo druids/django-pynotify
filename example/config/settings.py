@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pynotify.apps.PyNotifyConfig',
+    'chamber',
     'users',
     'articles',
     'notifications',

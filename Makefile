@@ -92,11 +92,11 @@ develop: clean ## prepares development environment
 
 po:
 	cd example && python ./manage.py makemessages -l cs
-	cd pynotify && django-admin makemessages -l cs
+	cd pynotify && ../example/manage.py makemessages -l cs
 
 mo:
 	cd example && python ./manage.py compilemessages
-	cd pynotify && django-admin compilemessages
+	cd pynotify && ../example/manage.py compilemessages
 
 makemigrations:
 	cd example && ./manage.py makemigrations && ./manage.py makemigrations pynotify
