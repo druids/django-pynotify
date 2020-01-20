@@ -2,7 +2,7 @@
 History
 =======
 
-not released yet
+0.1.7 (2020-01-20)
 ----------------
 
 * Add support for Python 3.8 and Django 2.2
