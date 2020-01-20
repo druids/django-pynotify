@@ -74,18 +74,23 @@ class NotificationTemplate(BaseModel):
 
 class NotificationManager(models.Manager):
 
+    def _create_related_object(self, notification, obj, name=None):
+        if not isinstance(obj, models.Model):
+            raise TypeError('Related object must be an instance of model.')
+        NotificationRelatedObject.objects.create(name=name, notification=notification, content_object=obj)
+
     def create(self, recipient, template, related_objects=None, extra_data=None, **kwargs):
         notification = super().create(recipient=recipient, template=template, **kwargs)
 
         if related_objects is not None:
-            if not isinstance(related_objects, dict):
-                raise TypeError('Related objects must be a dictionary in form {"name": object}.')
-
-            for name, object in related_objects.items():
-                if not isinstance(object, models.Model):
-                    raise TypeError('Related object must be an instance of model.')
-
-                NotificationRelatedObject.objects.create(name=name, notification=notification, content_object=object)
+            if isinstance(related_objects, dict):
+                for name, obj in related_objects.items():
+                    self._create_related_object(notification, obj, name)
+            elif isinstance(related_objects, list):
+                for obj in related_objects:
+                    self._create_related_object(notification, obj)
+            else:
+                raise TypeError('Related objects must be a list or dictionary in form {"name": object}.')
 
         if extra_data is not None:
             notification.set_extra_data(extra_data)
@@ -116,8 +121,8 @@ class Notification(BaseModel, metaclass=NotificationMeta):
 
     Attributes specified in ``NotificationTemplate.TEMPLATE_FIELDS`` are also available here, as generated properties,
     that are evaluated at runtime and will return rendered field from the associated template. By default, the context
-    used for rendering is filled with related objects and extra data, so they can be referenced in the template by their
-    name/key.
+    used for rendering is filled with named related objects and extra data, so they can be referenced in the template by
+    their name/key.
 
     Attributes:
         recipient: Recipient of the notification.
@@ -153,18 +158,20 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         return self.template.render(field, self.context)
 
     def _pre_save(self, *args, **kwargs):
-        keys = set(self.get_extra_data()) & set(obj.name for obj in self.related_objects.all())
+        keys = set(self.get_extra_data()) & set(obj.name for obj in self.related_objects.all() if obj.name)
         if keys:
             raise ValueError('Related objects and extra data contain same key(s): {}'.format(', '.join(keys)))
 
     @cached_property
     def related_objects_dict(self):
         """
-        Returns related objects as a dictionary where key is name of the related object and value is the object itself.
+        Returns named related objects as a dictionary where key is name of the related object and value is the object
+        itself. Related objects without name are skipped.
         """
         output = {}
         for obj in self.related_objects.all():
-            output[obj.name] = obj.content_object
+            if obj.name:
+                output[obj.name] = obj.content_object
         return output
 
     @property
@@ -197,15 +204,15 @@ class Notification(BaseModel, metaclass=NotificationMeta):
 
 class NotificationRelatedObject(BaseModel):
     """
-    Represents named object related to a notification. This object can be then referenced in notification template
-    fields.
+    Represents object related to a notification. This object can be then referenced in notification template
+    fields by its `name` (if not None).
 
     Attributes:
         name: String identificator of the object (for referencing in templates).
         notification: Related notification.
         content_object: The related object itself.
     """
-    name = models.CharField(max_length=200, verbose_name=_l('name'))
+    name = models.CharField(max_length=200, verbose_name=_l('name'), blank=True, null=True)
     notification = models.ForeignKey(
         Notification,
         on_delete=models.CASCADE,

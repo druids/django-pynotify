@@ -144,7 +144,8 @@ class BaseHandler(metaclass=HandlerMeta):
 
     def get_related_objects(self):
         """
-        Returns a dictionary of related objects in format {"name": object}.
+        Returns a list or dictionary of related objects in format {"name": object}. Named related objects (i.e. those
+        passed using a dictionary) can be referred in notification template.
         """
         return None
 

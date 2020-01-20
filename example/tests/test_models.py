@@ -166,7 +166,6 @@ class NotificationTestCase(TestCase):
     def test_creating_notification_should_not_be_possible_with_related_objects_in_invalid_format(self):
         INVALID_RELATED_OBJECTS = (
             self.random_user,
-            [self.random_user, self.author],
             User.objects.all(),
             'abc',
             ['abc', 'abc'],
@@ -179,6 +178,19 @@ class NotificationTestCase(TestCase):
                     template=self.template,
                     related_objects=related_objects
                 )
+
+    def test_creating_notification_should_allow_list_of_related_objects(self):
+        notification = Notification.objects.create(
+            recipient=self.recipient,
+            template=self.template,
+            related_objects=[self.random_user],
+        )
+
+        self.assertEqual(notification.related_objects.count(), 1)
+        related_object = notification.related_objects.get()
+        self.assertEqual(related_object.name, None)
+        self.assertEqual(related_object.content_object, self.random_user)
+        self.assertEqual(notification.context, {})
 
     def test_notification_should_have_string_representation(self):
         self.assertEqual(str(self.notification), 'notification #{}'.format(self.notification.pk))
