@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Use Django JSON encoder for encoding extra data
+
 0.2.1 (2020-02-11)
 ------------------
 

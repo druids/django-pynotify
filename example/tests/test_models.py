@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.utils.translation import override, ugettext_noop
@@ -116,7 +118,10 @@ class NotificationTestCase(TestCase):
                 'author': self.article.author,
                 'random_user': self.random_user,
             },
-            extra_data={'some_value': 123}
+            extra_data={
+                'some_value': 123,
+                'decimal_value': Decimal('1.55'),
+            }
         )
 
     def test_generated_fields_should_use_template_for_rendering(self):
@@ -160,6 +165,7 @@ class NotificationTestCase(TestCase):
         self.assertEqual(ctx['random_user']._object, self.random_user)
 
         self.assertEqual(ctx['some_value'], 123)
+        self.assertEqual(ctx['decimal_value'], '1.55')
 
     def test_context_should_be_cached(self):
         self.assertEqual(
