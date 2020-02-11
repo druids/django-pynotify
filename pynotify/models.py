@@ -13,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _l
 
 from .config import settings
 from .exceptions import MissingContextVariableError
+from .helpers import DeletedRelatedObject, SecureRelatedObject
 
 
 class BaseModel(SmartModel):
@@ -105,7 +106,8 @@ class NotificationTemplate(BaseTemplate):
         if settings.TEMPLATE_CHECK:
             vars = re.findall(r'{{ ?([^\.}]+)[^}]*}}', template_string)
             for var in vars:
-                if context.get(var) is None:
+                value = context.get(var)
+                if value is None or isinstance(value, DeletedRelatedObject):
                     raise MissingContextVariableError(field, var)
 
         return Template('{}{}'.format(settings.TEMPLATE_PREFIX, template_string)).render(Context(context))
@@ -208,9 +210,8 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         itself. Related objects without name are skipped.
         """
         output = {}
-        for obj in self.related_objects.all():
-            if obj.name:
-                output[obj.name] = obj.content_object
+        for obj in self.related_objects.filter(name__isnull=False):
+            output[obj.name] = SecureRelatedObject(obj.content_object) if obj.content_object else DeletedRelatedObject()
         return output
 
     @property

@@ -143,6 +143,18 @@ accessed through :class:`~pynotify.models.Notification`, are rendered using Djan
 with named related objects. This is very convenient since notifications will always stay up to date, even if related
 object changes.
 
+.. note::
+   For security reasons, you can only access related object's string representation and a set of attributes defined in
+   ``PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES``. See :ref:`config` for more information.
+
+.. caution::
+   Avoid adding unnecessary attributes to ``PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES``, since it increases
+   coupling between notification template(s) and the code. This is undesirable and makes managing and maintenance of
+   notifications harder.
+
+   Always consider first to store attribute's value in extra data (as described lower), or save nested objects as
+   standalone related objects (if you really need dynamic behavior).
+
 In case you want to "freeze" the values used in template strings (i.e. not reflect changes made in related objects),
 define :meth:`~pynotify.models.Notification.get_extra_data`, which should return a dict of JSON serizalizable values.
 These extra data are also put into template context, together with named related objects.

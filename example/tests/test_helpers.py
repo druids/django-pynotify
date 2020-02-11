@@ -4,7 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.dispatch import Signal
 from django.test import TestCase, override_settings
 
-from pynotify.helpers import autoload, get_import_path, process_task, register, signal_map
+from pynotify.helpers import (DeletedRelatedObject, SecureRelatedObject, autoload, get_import_path, process_task,
+                              register, signal_map)
 
 from .test_app.signals import autoload_signal
 
@@ -32,6 +33,17 @@ class MockHandler2(MagicMock):
 
 class MockSerializer(MagicMock):
     deserialize = MagicMock(side_effect=lambda value: value)
+
+
+class MockRelatedObject:
+    a = 123
+    b = 456
+
+    def say_hello(self):
+        return 'Hello!'
+
+    def __str__(self):
+        return 'Related object'
 
 
 # TESTS -------------------------------------------------------------------------------------------
@@ -115,3 +127,27 @@ class HelpersTestCase(TestCase):
             autoload()
             self.assertEqual(signal_map.get(autoload_signal), [])
             logger.exception.assert_called_once()
+
+    @override_settings(PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES={})
+    def test_related_object_proxy_should_allow_only_string_representation(self):
+        obj = SecureRelatedObject(MockRelatedObject())
+        self.assertEqual(str(obj), 'Related object')
+        self.assertRaises(AttributeError, lambda: obj.a)
+        self.assertRaises(AttributeError, lambda: obj.b)
+        self.assertRaises(AttributeError, lambda: obj.xyz)
+        self.assertRaises(AttributeError, lambda: obj.say_hello())
+
+    @override_settings(PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES={'a', 'say_hello'})
+    def test_related_object_proxy_should_allow_only_defined_allowed_attributes(self):
+        obj = SecureRelatedObject(MockRelatedObject())
+        self.assertEqual(str(obj), 'Related object')
+        self.assertEqual(obj.a, 123)
+        self.assertEqual(obj.say_hello(), 'Hello!')
+        self.assertRaises(AttributeError, lambda: obj.b)
+        self.assertRaises(AttributeError, lambda: obj.xyz)
+
+    def test_deleted_related_object_should_have_string_representation_same_for_any_attribute(self):
+        obj = DeletedRelatedObject()
+        self.assertEqual(str(obj), '[DELETED]')
+        self.assertEqual(str(obj.x), '[DELETED]')
+        self.assertEqual(str(obj.x.y), '[DELETED]')

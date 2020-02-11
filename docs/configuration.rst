@@ -24,6 +24,10 @@ You can configure the library in Django settings. Following options are availabl
 
     Import path to a receiver class.
 
+* ``PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES`` (default: ``{'get_absolute_url', }``)
+
+    A set of related object's attributes that can be used in notification template(s).
+
 * ``PYNOTIFY_TEMPLATE_CHECK`` (default: ``False``)
 
     Boolean indicating if template string should be checked before rendering. If any named related object or extra data

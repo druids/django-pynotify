@@ -6,6 +6,8 @@ not released yet
 ----------------
 
 * Add admin templates
+* Limit usage of related objects in templates and add ``PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES`` setting
+* Show placeholder text for deleted related objects
 
 0.1.7 (2020-01-20)
 ------------------

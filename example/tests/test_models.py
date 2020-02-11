@@ -3,6 +3,7 @@ from django.test import TestCase, override_settings
 from django.utils.translation import override, ugettext_noop
 
 from pynotify.exceptions import MissingContextVariableError
+from pynotify.helpers import DeletedRelatedObject, SecureRelatedObject
 from pynotify.models import AdminNotificationTemplate, Notification, NotificationTemplate
 
 from articles.models import Article
@@ -52,10 +53,14 @@ class NotificationTemplateTestCase(TestCase):
         with self.assertRaises(MissingContextVariableError):
             self.render('title', {'article': None})
 
+        with self.assertRaises(MissingContextVariableError):
+            self.render('title', {'article': DeletedRelatedObject()})
+
         # test with setting off
         with override_settings(PYNOTIFY_TEMPLATE_CHECK=False):
             self.assertEqual(self.render('title', {}), 'New article: ')
             self.assertEqual(self.render('title', {'article': None}), 'New article: None')
+            self.assertEqual(self.render('title', {'article': DeletedRelatedObject()}), 'New article: [DELETED]')
 
     @override_settings(PYNOTIFY_TEMPLATE_CHECK=True)
     def test_template_check_should_detect_multiple_variable_formats(self):
@@ -99,7 +104,7 @@ class NotificationTestCase(TestCase):
 
         self.template = NotificationTemplate.objects.create(
             title='{{article}}',
-            text='{{article.author}} created a new article named {{article}}.',
+            text='{{author}} created a new article named {{article}}.',
             trigger_action='{{article.get_absolute_url}}',
         )
 
@@ -108,6 +113,7 @@ class NotificationTestCase(TestCase):
             template=self.template,
             related_objects={
                 'article': self.article,
+                'author': self.article.author,
                 'random_user': self.random_user,
             },
             extra_data={'some_value': 123}
@@ -141,34 +147,30 @@ class NotificationTestCase(TestCase):
         with self.assertRaises(ValueError):
             self.notification.save()
 
-    def test_context_should_contain_related_objects_and_extra_data(self):
-        self.assertEqual(
-            self.notification.context,
-            {'article': self.article, 'random_user': self.random_user, 'some_value': 123}
-        )
+    def test_context_should_contain_related_objects_as_proxies_and_extra_data(self):
+        ctx = self.notification.context
+
+        self.assertTrue(isinstance(ctx['article'], SecureRelatedObject))
+        self.assertEqual(ctx['article']._object, self.article)
+
+        self.assertTrue(isinstance(ctx['author'], SecureRelatedObject))
+        self.assertEqual(ctx['author']._object, self.article.author)
+
+        self.assertTrue(isinstance(ctx['random_user'], SecureRelatedObject))
+        self.assertEqual(ctx['random_user']._object, self.random_user)
+
+        self.assertEqual(ctx['some_value'], 123)
 
     def test_context_should_be_cached(self):
-        # force context to load
-        self.notification.context
-        self.random_user.username = 'Mr.Random2'
-        self.random_user.save()
+        self.assertEqual(
+            id(self.notification.context),
+            id(self.notification.context),
+        )
 
-        self.assertEqual(self.notification.context['random_user'].username, 'Mr.Random')
-
-        self.notification.refresh_from_db()
-        self.assertEqual(self.notification.context['random_user'].username, 'Mr.Random2')
-
-    def test_context_should_not_contain_deleted_objects(self):
+    def test_context_should_contain_placeholder_object_for_deleted_related_object(self):
         self.random_user.delete()
         self.notification.refresh_from_db()
-        self.assertEqual(
-            self.notification.context,
-            {
-                'article': self.article,
-                'random_user': None,
-                'some_value': 123,
-            }
-        )
+        self.assertTrue(isinstance(self.notification.context['random_user'], DeletedRelatedObject))
 
     def test_creating_notification_should_not_be_possible_with_related_objects_in_invalid_format(self):
         INVALID_RELATED_OBJECTS = (
