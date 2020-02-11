@@ -2,8 +2,8 @@
 History
 =======
 
-not released yet
-----------------
+0.2.0 (2020-02-11)
+------------------
 
 * Add admin templates
 * Limit usage of related objects in templates and add ``PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES`` setting
