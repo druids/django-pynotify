@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Add admin templates
+
 0.1.7 (2020-01-20)
 ------------------
 

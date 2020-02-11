@@ -26,7 +26,44 @@ class BaseModel(SmartModel):
         abstract = True
 
 
-class NotificationTemplate(BaseModel):
+class BaseTemplate(BaseModel):
+    """
+    Base abstract model for notification template.
+
+    Attributes:
+        title: Title of the notification.
+        text: Text of the notification.
+        trigger_action: Arbitrary action performed when user triggers (i.e. clicks/taps) the notification.
+    """
+    title = models.CharField(max_length=200, verbose_name=_l('title'))
+    text = models.TextField(null=True, blank=True, verbose_name=_l('text'))
+    trigger_action = models.CharField(max_length=2500, null=True, blank=True,
+                                      verbose_name=_l('trigger action'))
+
+    class Meta:
+        abstract = True
+
+
+class AdminNotificationTemplate(BaseTemplate):
+    """
+    Represents a "template of a template". This model is intended to be managed from administration, hence its name. It
+    is identified by `slug`, which can be used for notification creation. However, this template is never used to
+    directly render a notification, but instead is used to create `NotificationTemplate` with same values.
+
+    Attributes:
+        slug: Template slug, with which this template can be referred to.
+    """
+    slug = models.SlugField(max_length=200, unique=True, verbose_name=_l('slug'))
+
+    class Meta:
+        verbose_name = _l('admin notification template')
+        verbose_name_plural = _l('admin notification templates')
+
+    def __str__(self):
+        return '{} ({})'.format(super().__str__(), self.slug)
+
+
+class NotificationTemplate(BaseTemplate):
     """
     Represents template that is used for rendering notification fields. Each field specified in ``TEMPLATE_FIELDS`` is a
     template string, that can be rendered using the ``render`` method.
@@ -35,24 +72,26 @@ class NotificationTemplate(BaseModel):
         title: Title of the notification.
         text: Text of the notification.
         trigger_action: Arbitrary action performed when user triggers (i.e. clicks/taps) the notification.
-        slug: Template slug.
+        admin_template: Reference to admin template that was used to create this notification template.
     """
     TEMPLATE_FIELDS = ['title', 'text', 'trigger_action']
 
-    title = models.CharField(max_length=200, verbose_name=_l('title'))
-    text = models.TextField(null=True, blank=True, verbose_name=_l('text'))
-    trigger_action = models.CharField(max_length=2500, null=True, blank=True, verbose_name=_l('trigger action'))
-    slug = models.SlugField(max_length=200, null=True, blank=True, unique=True, verbose_name=_l('slug'))
+    admin_template = models.ForeignKey(
+        AdminNotificationTemplate,
+        related_name="notification_templates",
+        on_delete=models.SET_NULL,
+        verbose_name=_l('admin notification template'),
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = _l('notification template')
         verbose_name_plural = _l('notification templates')
 
-    def __str__(self):
-        _str = super().__str__()
-        if self.slug:
-            return '{} ({})'.format(_str, self.slug)
-        return _str
+    @property
+    def slug(self):
+        return self.admin_template.slug if self.admin_template else None
 
     def render(self, field, context):
         """

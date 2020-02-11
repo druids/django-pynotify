@@ -9,7 +9,7 @@ from django.test import TestCase
 from pynotify.dispatchers import BaseDispatcher
 from pynotify.handlers import BaseHandler
 from pynotify.helpers import signal_map
-from pynotify.models import NotificationTemplate
+from pynotify.models import AdminNotificationTemplate
 
 
 # MOCK OBJECTS ------------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class HandlerTestCase(TestCase):
         self.user1 = User.objects.create_user('Jack')
         self.user2 = User.objects.create_user('John')
         self.user3 = User.objects.create_user('James')
-        self.template = NotificationTemplate.objects.create(title='Hello slug!', slug='test_slug')
+        self.template = AdminNotificationTemplate.objects.create(title='Hello slug!', slug='test_slug')
 
     def test_handler_should_be_automatically_registered(self):
         self.assertEqual(signal_map.get(test_signal_data), [(TestDataHandler, None)])
@@ -152,5 +152,5 @@ class HandlerTestCase(TestCase):
     def test_handler_should_create_notification_using_template_slug(self):
         test_signal_slug.send(sender=MockSender, recipients=[self.user1])
         notification = self.user1.notifications.get()
-        self.assertEqual(notification.template, self.template)
+        self.assertEqual(notification.template.admin_template, self.template)
         self.assertEqual(notification.title, 'Hello slug!')

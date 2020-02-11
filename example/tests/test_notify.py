@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from pynotify.models import NotificationTemplate
+from pynotify.models import AdminNotificationTemplate
 from pynotify.notify import notify
 
 
@@ -14,7 +14,7 @@ class MockDispatcher:
 class NotifyTestCase(TestCase):
 
     def setUp(self):
-        self.template = NotificationTemplate.objects.create(title='Hi!', slug='my-template')
+        self.template = AdminNotificationTemplate.objects.create(title='Hi!', slug='my-template')
         self.user = User.objects.create_user('John')
 
     def test_notify_should_create_notification(self):

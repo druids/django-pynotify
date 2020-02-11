@@ -149,10 +149,11 @@ These extra data are also put into template context, together with named related
 
 Instead of using :meth:`~pynotify.handlers.BaseHandler.get_template_data`, you can define handler's attribute
 ``template_slug``. This is a better option in case you prefer to often change template strings via administration
-interface.  Note, that the template referenced by slug must already exist - it won't be automatically created. You can
-create it in administration interface or using data migration.
+interface.  Note, that the admin template (:class:`~pynotify.models.AdminNotificationTemplate`) referenced by slug
+must already exist - it won't be automatically created. You can create it in administration interface or using data
+migration.
 
-Given the template with slug `article-viewed`, our handler can be modified as follows::
+Given the admin template with slug `article-viewed`, our handler can be modified as follows::
 
     from pynotify.handlers import BaseHandler
     from articles.signals import article_viewed
