@@ -5,6 +5,7 @@ from chamber.models import SmartModel, SmartModelBase
 from django.conf import settings as django_settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.template.base import Context, Template
 from django.utils.functional import cached_property
@@ -230,7 +231,7 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         """
         if not isinstance(extra_data, dict):
             raise ValueError('Extra data must be a dictionary.')
-        self.extra_data = json.dumps(extra_data)
+        self.extra_data = json.dumps(extra_data, cls=DjangoJSONEncoder)
 
     def get_extra_data(self):
         """
