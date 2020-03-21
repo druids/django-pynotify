@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Fix documentation
+
 0.2.2 (2020-02-11)
 ------------------
 
