@@ -61,6 +61,9 @@ class BaseHandler(metaclass=HandlerMeta):
 
     @cached_property
     def _template(self):
+        """
+        Returns notification template that will be used for creation of notification(s).
+        """
         template_slug = self.get_template_slug()
         if template_slug:
             admin_template = AdminNotificationTemplate.objects.get(slug=template_slug)
@@ -75,15 +78,46 @@ class BaseHandler(metaclass=HandlerMeta):
 
         return template
 
+    def _create_notification(self, recipient):
+        """
+        Creates notification for ``recipient``.
+        """
+        notification = Notification(recipient=recipient, template=self._template)
+
+        extra_data = self.get_extra_data()
+        if extra_data:
+            notification.set_extra_data(extra_data)
+
+        related_objects = self.get_related_objects()
+        if related_objects:
+            notification.set_local_related_objects(related_objects)
+
+        if self._can_save_notification(notification):
+            notification.save()
+
+        return notification
+
     def _init_dispatchers(self):
-        self.dispatchers = []
+        """
+        Initializes dipatchers that will be used for sending of notification(s).
+        """
+        self._dispatchers = []
         dispatcher_classes = self.get_dispatcher_classes()
         if dispatcher_classes:
             for dispatcher_class in dispatcher_classes:
-                self.dispatchers.append(self._init_dispatcher(dispatcher_class))
+                self._dispatchers.append(self._init_dispatcher(dispatcher_class))
 
     def _init_dispatcher(self, dispatcher_class):
+        """
+        Initializes a single dispatcher. Override this method if you need specific initialization procedure.
+        """
         return dispatcher_class()
+
+    def _can_handle(self):
+        """
+        Returns ``True`` if handler can handle creating of notification(s).
+        """
+        return True
 
     def _can_create_notification(self, recipient):
         """
@@ -91,34 +125,15 @@ class BaseHandler(metaclass=HandlerMeta):
         """
         return True
 
-    def _create_notification(self, recipient):
+    def _can_save_notification(self, notification):
         """
-        Creates notification for ``recipient``.
+        Returns ``True`` if ``notification`` can be saved into DB.
         """
-        if self._can_create_notification(recipient):
-            return Notification.objects.create(
-                recipient=recipient,
-                template=self._template,
-                related_objects=self.get_related_objects(),
-                extra_data=self.get_extra_data(),
-            )
+        return True
 
     def _can_dispatch_notification(self, notification, dispatcher):
         """
         Returns ``True`` if ``notification`` can be dispatched using ``dispatcher``.
-        """
-        return True
-
-    def _dispatch_notification(self, notification, dispatcher):
-        """
-        Dispatches ``notification`` using ``dispatcher``.
-        """
-        if self._can_dispatch_notification(notification, dispatcher):
-            dispatcher.dispatch(notification)
-
-    def _can_handle(self):
-        """
-        Returns ``True`` if handler should handle creating of notification(s).
         """
         return True
 
@@ -127,14 +142,19 @@ class BaseHandler(metaclass=HandlerMeta):
         Handles creation of notifications from ``signal_kwargs``.
         """
         self.signal_kwargs = signal_kwargs
-        if self._can_handle():
-            self._init_dispatchers()
-            for recipient in self.get_recipients():
-                notification = self._create_notification(recipient)
 
-                if notification:
-                    for dispatcher in self.dispatchers:
-                        self._dispatch_notification(notification, dispatcher)
+        if not self._can_handle():
+            return
+
+        self._init_dispatchers()
+        for recipient in self.get_recipients():
+            if not self._can_create_notification(recipient):
+                continue
+
+            notification = self._create_notification(recipient)
+            for dispatcher in self._dispatchers:
+                if self._can_dispatch_notification(notification, dispatcher):
+                    dispatcher.dispatch(notification)
 
     def get_recipients(self):
         """

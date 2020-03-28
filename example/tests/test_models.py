@@ -103,6 +103,7 @@ class NotificationTestCase(TestCase):
         self.author = User.objects.create_user('John')
         self.article = Article.objects.create(title='The Old Witch', author=self.author)
         self.random_user = User.objects.create_user('Mr.Random')
+        self.random_user2 = User.objects.create_user('Mr.Random 2')
 
         self.template = NotificationTemplate.objects.create(
             title='{{article}}',
@@ -110,19 +111,20 @@ class NotificationTestCase(TestCase):
             trigger_action='{{article.get_absolute_url}}',
         )
 
-        self.notification = Notification.objects.create(
+        self.notification = Notification(
             recipient=self.recipient,
             template=self.template,
-            related_objects={
-                'article': self.article,
-                'author': self.article.author,
-                'random_user': self.random_user,
-            },
-            extra_data={
-                'some_value': 123,
-                'decimal_value': Decimal('1.55'),
-            }
         )
+        self.notification.set_local_related_objects({
+            'article': self.article,
+            'author': self.article.author,
+            'random_user': self.random_user,
+        })
+        self.notification.set_extra_data({
+            'some_value': 123,
+            'decimal_value': Decimal('1.55'),
+        })
+        self.notification.save()
 
     def test_generated_fields_should_use_template_for_rendering(self):
         self.assertEqual(self.notification.title, 'The Old Witch')
@@ -148,11 +150,27 @@ class NotificationTestCase(TestCase):
             self.notification.set_extra_data(1000)
 
     def test_related_objects_and_extra_data_should_not_contain_same_keys(self):
+        self.notification.set_local_related_objects({'random_user': self.random_user})
+        with self.assertRaises(ValueError):
+            self.notification.context
+        with self.assertRaises(ValueError):
+            self.notification.save()
+
+        self.notification.set_local_related_objects({'some_value': self.random_user})
+        with self.assertRaises(ValueError):
+            self.notification.context
+        with self.assertRaises(ValueError):
+            self.notification.save()
+
+        self.notification.set_local_related_objects({})
         self.notification.set_extra_data({'article': 123})
+        with self.assertRaises(ValueError):
+            self.notification.context
         with self.assertRaises(ValueError):
             self.notification.save()
 
     def test_context_should_contain_related_objects_as_proxies_and_extra_data(self):
+        self.notification.set_local_related_objects({'local_user': self.random_user2})
         ctx = self.notification.context
 
         self.assertTrue(isinstance(ctx['article'], SecureRelatedObject))
@@ -163,6 +181,9 @@ class NotificationTestCase(TestCase):
 
         self.assertTrue(isinstance(ctx['random_user'], SecureRelatedObject))
         self.assertEqual(ctx['random_user']._object, self.random_user)
+
+        self.assertTrue(isinstance(ctx['local_user'], SecureRelatedObject))
+        self.assertEqual(ctx['local_user']._object, self.random_user2)
 
         self.assertEqual(ctx['some_value'], 123)
         self.assertEqual(ctx['decimal_value'], '1.55')
@@ -186,26 +207,55 @@ class NotificationTestCase(TestCase):
             ['abc', 'abc'],
             {'abc': 'abc'},
         )
+        notification = Notification.objects.create(recipient=self.recipient, template=self.template)
         for related_objects in INVALID_RELATED_OBJECTS:
             with self.assertRaises(TypeError):
-                Notification.objects.create(
-                    recipient=self.recipient,
-                    template=self.template,
-                    related_objects=related_objects
-                )
+                notification.set_local_related_objects(related_objects)
+                notification.save()
+            notification.set_local_related_objects({})
 
     def test_creating_notification_should_allow_list_of_related_objects(self):
-        notification = Notification.objects.create(
-            recipient=self.recipient,
-            template=self.template,
-            related_objects=[self.random_user],
-        )
+        notification = Notification(recipient=self.recipient, template=self.template)
+        notification.set_local_related_objects([self.random_user])
+        notification.save()
 
         self.assertEqual(notification.related_objects.count(), 1)
         related_object = notification.related_objects.get()
         self.assertEqual(related_object.name, None)
         self.assertEqual(related_object.content_object, self.random_user)
         self.assertEqual(notification.context, {})
+
+    def test_saving_notification_should_save_list_of_local_related_objects_into_db(self):
+        notification = Notification(recipient=self.recipient, template=self.template)
+
+        notification.set_local_related_objects([self.random_user2])
+        self.assertEqual(len(notification._local_related_objects_list), 1)
+        self.assertEqual(notification._local_related_objects_list[0], self.random_user2)
+        self.assertEqual(notification.related_objects.count(), 0)
+
+        notification.save()
+        self.assertEqual(len(notification._local_related_objects_list), 0)
+        self.assertEqual(notification.related_objects.count(), 1)
+
+        related_object = notification.related_objects.get()
+        self.assertEqual(related_object.name, None)
+        self.assertEqual(related_object.content_object, self.random_user2)
+
+    def test_saving_notification_should_save_dictionary_of_local_related_objects_into_db(self):
+        notification = Notification(recipient=self.recipient, template=self.template)
+
+        notification.set_local_related_objects({'random_user2': self.random_user2})
+        self.assertEqual(len(notification._local_related_objects_dict), 1)
+        self.assertEqual(notification._local_related_objects_dict['random_user2'], self.random_user2)
+        self.assertEqual(notification.related_objects.count(), 0)
+
+        notification.save()
+        self.assertEqual(len(notification._local_related_objects_dict), 0)
+        self.assertEqual(notification.related_objects.count(), 1)
+
+        related_object = notification.related_objects.get()
+        self.assertEqual(related_object.name, 'random_user2')
+        self.assertEqual(related_object.content_object, self.random_user2)
 
     def test_notification_should_have_string_representation(self):
         self.assertEqual(str(self.notification), 'notification #{}'.format(self.notification.pk))
