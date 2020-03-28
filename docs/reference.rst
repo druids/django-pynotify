@@ -63,3 +63,12 @@ pynotify.serializers
 .. automodule:: pynotify.serializers
     :members:
     :show-inheritance:
+
+pynotify.tasks
+---------------------------
+
+.. automodule:: pynotify.tasks
+    :members:
+    :show-inheritance:
+
+    .. autofunction:: notification_task(self, *args, **kwargs)

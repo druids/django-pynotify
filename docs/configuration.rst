@@ -11,7 +11,7 @@ You can configure the library in Django settings. Following options are availabl
     Iterable of Django apps that will be scanned for ``handlers`` module at startup. If the module is found, it will be
     imported, i.e. causing notification handlers to be automatically loaded.
 
-* ``PYNOTIFY_CELERY_TASK`` (default: ``pynotify.tasks.pynotify_task``)
+* ``PYNOTIFY_CELERY_TASK`` (default: ``pynotify.tasks.notification_task``)
 
     Import path to a Celery task used in asynchronous mode. See :ref:`async`.
 
