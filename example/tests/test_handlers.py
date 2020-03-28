@@ -9,7 +9,7 @@ from django.test import TestCase
 from pynotify.dispatchers import BaseDispatcher
 from pynotify.handlers import BaseHandler
 from pynotify.helpers import signal_map
-from pynotify.models import AdminNotificationTemplate
+from pynotify.models import AdminNotificationTemplate, Notification
 
 
 # MOCK OBJECTS ------------------------------------------------------------------------------------
@@ -54,14 +54,20 @@ class TestDataHandler(BaseHandler):
     def get_extra_data(self):
         return {'some_value': 123}
 
-    def _can_create_notification(self, recipient):
-        return recipient.username != 'James'
-
-    def _can_dispatch_notification(self, notification, dispatcher):
-        return notification.recipient.username != 'John'
-
     def _can_handle(self):
         return super()._can_handle() and self.signal_kwargs.get('can_handle', True)
+
+    def _can_create_notification(self, recipient):
+        return super()._can_create_notification(recipient) and self.signal_kwargs.get('can_create', True)
+
+    def _can_save_notification(self, notification):
+        return super()._can_save_notification(notification) and self.signal_kwargs.get('can_save', True)
+
+    def _can_dispatch_notification(self, notification, dispatcher):
+        return (
+            super()._can_dispatch_notification(notification, dispatcher)
+            and self.signal_kwargs.get('can_dispatch', True)
+        )
 
     class Meta:
         signal = test_signal_data
@@ -87,7 +93,6 @@ class HandlerTestCase(TestCase):
     def setUp(self):
         self.user1 = User.objects.create_user('Jack')
         self.user2 = User.objects.create_user('John')
-        self.user3 = User.objects.create_user('James')
         self.template = AdminNotificationTemplate.objects.create(title='Hello slug!', slug='test_slug')
 
     def test_handler_should_be_automatically_registered(self):
@@ -123,7 +128,10 @@ class HandlerTestCase(TestCase):
 
     def test_handler_should_create_notification_using_template_data(self):
         users = [self.user1, self.user2]
-        test_signal_data.send(sender=None, recipients=[self.user1, self.user2, self.user3])
+        test_signal_data.send(sender=None, recipients=[self.user1, self.user2])
+
+        self.assertEqual(Notification.objects.all().count(), 2)
+        self.assertEqual(len(MockDispatcher.dispatched_notifications), 2)
 
         for user in users:
             notification = user.notifications.get()
@@ -134,23 +142,36 @@ class HandlerTestCase(TestCase):
             self.assertEqual(notification.get_extra_data(), {'some_value': 123})
             self.assertEqual(related_object.name, 'first_recipient')
             self.assertEqual(related_object.content_object, self.user1)
-            if user.username == 'Jack':
-                self.assertIn(notification, MockDispatcher.dispatched_notifications)
-
-        self.assertEqual(len(MockDispatcher.dispatched_notifications), 1)
+            self.assertIn(notification, MockDispatcher.dispatched_notifications)
 
         # Repeated notification should use the same template
         test_signal_data.send(sender=None, recipients=[self.user1])
         notifications = self.user1.notifications.all()
         self.assertEqual(notifications[0].template, notifications[1].template)
 
-        # Test _can_handle() method is used
-        self.user1.notifications.all().delete()
-        test_signal_data.send(sender=None, recipients=[self.user1], can_handle=False)
-        self.assertEqual(self.user1.notifications.count(), 0)
-
     def test_handler_should_create_notification_using_template_slug(self):
         test_signal_slug.send(sender=MockSender, recipients=[self.user1])
         notification = self.user1.notifications.get()
         self.assertEqual(notification.template.admin_template, self.template)
         self.assertEqual(notification.title, 'Hello slug!')
+
+    def test_can_handle_method_should_be_used(self):
+        test_signal_data.send(sender=None, recipients=[self.user1], can_handle=False)
+        self.assertEqual(self.user1.notifications.count(), 0)
+        self.assertEqual(len(MockDispatcher.dispatched_notifications), 0)
+
+    def test_can_create_notification_method_should_be_used(self):
+        test_signal_data.send(sender=None, recipients=[self.user1], can_create=False)
+        self.assertEqual(self.user1.notifications.count(), 0)
+        self.assertEqual(len(MockDispatcher.dispatched_notifications), 0)
+
+    def test_can_save_notification_method_should_be_used(self):
+        test_signal_data.send(sender=None, recipients=[self.user1], can_save=False)
+        self.assertEqual(self.user1.notifications.count(), 0)
+        self.assertEqual(len(MockDispatcher.dispatched_notifications), 1)
+        self.assertIsNone(MockDispatcher.dispatched_notifications[0].pk)
+
+    def test_can_dispatch_notification_method_should_be_used(self):
+        test_signal_data.send(sender=None, recipients=[self.user1], can_dispatch=False)
+        self.assertEqual(self.user1.notifications.count(), 1)
+        self.assertEqual(len(MockDispatcher.dispatched_notifications), 0)

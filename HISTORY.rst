@@ -6,6 +6,7 @@ not released yet
 ----------------
 
 * Fix documentation
+* Allow rendering to work without saving the notification into DB
 
 0.2.2 (2020-02-11)
 ------------------

@@ -114,33 +114,6 @@ class NotificationTemplate(BaseTemplate):
         return Template('{}{}'.format(settings.TEMPLATE_PREFIX, template_string)).render(Context(context))
 
 
-class NotificationManager(models.Manager):
-
-    def _create_related_object(self, notification, obj, name=None):
-        if not isinstance(obj, models.Model):
-            raise TypeError('Related object must be an instance of model.')
-        NotificationRelatedObject.objects.create(name=name, notification=notification, content_object=obj)
-
-    def create(self, recipient, template, related_objects=None, extra_data=None, **kwargs):
-        notification = super().create(recipient=recipient, template=template, **kwargs)
-
-        if related_objects is not None:
-            if isinstance(related_objects, dict):
-                for name, obj in related_objects.items():
-                    self._create_related_object(notification, obj, name)
-            elif isinstance(related_objects, list):
-                for obj in related_objects:
-                    self._create_related_object(notification, obj)
-            else:
-                raise TypeError('Related objects must be a list or dictionary in form {"name": object}.')
-
-        if extra_data is not None:
-            notification.set_extra_data(extra_data)
-            notification.save()
-
-        return notification
-
-
 class NotificationMeta(SmartModelBase, type):
     """
     Creates property for each template field. The property returns rendered template.
@@ -189,38 +162,78 @@ class Notification(BaseModel, metaclass=NotificationMeta):
     is_triggered = models.BooleanField(default=False, verbose_name=_l('is triggered'))
     extra_data = models.TextField(null=True, blank=True, verbose_name=_l('extra data'))
 
-    objects = NotificationManager()
-
     class Meta:
         verbose_name = _l('notification')
         verbose_name_plural = _l('notifications')
         ordering = ('-created_at',)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._local_related_objects_dict = {}
+        self._local_related_objects_list = []
+
+    def _post_save(self, *args, **kwargs):
+        """
+        Saves local related objects into DB.
+        """
+        for name, obj in self._local_related_objects_dict.items():
+            NotificationRelatedObject.objects.create(name=name, notification=self, content_object=obj)
+        self._local_related_objects_dict = {}
+
+        for obj in self._local_related_objects_list:
+            NotificationRelatedObject.objects.create(notification=self, content_object=obj)
+        self._local_related_objects_list = []
+
+    def _check_related_objects_and_extra_data(self):
+        """
+        Checks type of local related objects and uniqueness of all related object's names compared to extra data.
+        """
+        local_related_objects = self._local_related_objects_list + [
+            value for key, value in self._local_related_objects_dict.items()
+        ]
+        for obj in local_related_objects:
+            if not isinstance(obj, models.Model):
+                raise TypeError('Related object must be an instance of model.')
+
+        db_related_object_names = [obj.name for obj in self.related_objects.filter(name__isnull=False)]
+        common_keys = (
+            set(self.get_extra_data()) & set(self._local_related_objects_dict)
+            or set(self.get_extra_data()) & set(db_related_object_names)
+            or set(self._local_related_objects_dict) & set(db_related_object_names)
+        )
+        if common_keys:
+            raise ValueError('Conflicting keys found for related objects and/or extra data: {}'.format(
+                ', '.join(common_keys)
+            ))
+
     def _render(self, field):
         return self.template.render(field, self.context)
 
-    def _pre_save(self, *args, **kwargs):
-        keys = set(self.get_extra_data()) & set(obj.name for obj in self.related_objects.all() if obj.name)
-        if keys:
-            raise ValueError('Related objects and extra data contain same key(s): {}'.format(', '.join(keys)))
+    def clean(self):
+        self._check_related_objects_and_extra_data()
 
-    @cached_property
-    def related_objects_dict(self):
+    @property
+    def _get_secure_related_objects(self):
         """
-        Returns named related objects as a dictionary where key is name of the related object and value is the object
-        itself. Related objects without name are skipped.
+        Returns dictionary of related objects for use in template context:
+            * key is name of the related object and value is the object itself, wrapped in a security class.
+            * local related objects and related objects from DB are combined together
+            * related objects without name are skipped.
         """
         output = {}
         for obj in self.related_objects.filter(name__isnull=False):
             output[obj.name] = SecureRelatedObject(obj.content_object) if obj.content_object else DeletedRelatedObject()
+        for name, obj in self._local_related_objects_dict.items():
+            output[name] = SecureRelatedObject(obj)
         return output
 
-    @property
+    @cached_property
     def context(self):
         """
         Returns context dictionary used for rendering the template.
         """
-        return {**self.related_objects_dict, **self.get_extra_data()}
+        self._check_related_objects_and_extra_data()
+        return {**self._get_secure_related_objects, **self.get_extra_data()}
 
     def set_extra_data(self, extra_data):
         """
@@ -241,6 +254,18 @@ class Notification(BaseModel, metaclass=NotificationMeta):
             Dictionary with extra data.
         """
         return json.loads(self.extra_data) if self.extra_data is not None else {}
+
+    def set_local_related_objects(self, related_objects):
+        """
+        Sets related objects locally. That means they can be used for rendering, but are not saved automatically.
+        You must call `save()` in order to save them.
+        """
+        if isinstance(related_objects, dict):
+            self._local_related_objects_dict = related_objects
+        elif isinstance(related_objects, list):
+            self._local_related_objects_list = related_objects
+        else:
+            raise TypeError('Related objects must be a list or dictionary in form {"name": object}.')
 
 
 class NotificationRelatedObject(BaseModel):
