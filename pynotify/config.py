@@ -7,7 +7,7 @@ class Settings:
     """
     PREFIX = 'PYNOTIFY'
     DEFAULTS = {
-        'AUTOLOAD_APPS': None,
+        'AUTOLOAD_MODULES': None,
         'CELERY_TASK': 'pynotify.tasks.notification_task',
         'ENABLED': True,
         'RECEIVER': 'pynotify.receivers.SynchronousReceiver',

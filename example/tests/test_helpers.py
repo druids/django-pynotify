@@ -110,7 +110,7 @@ class HelpersTestCase(TestCase):
     def test_get_import_path_should_return_import_path_of_the_class(self):
         self.assertEqual(get_import_path(MockHandler1), 'example.tests.test_helpers.MockHandler1')
 
-    @override_settings(PYNOTIFY_AUTOLOAD_APPS=('example.tests.test_app',))
+    @override_settings(PYNOTIFY_AUTOLOAD_MODULES=('example.tests.test_app.handlers',))
     def test_handlers_should_be_autoloaded_from_specified_apps(self):
         self.assertEqual(signal_map.get(autoload_signal), [])
         autoload()
@@ -121,7 +121,7 @@ class HelpersTestCase(TestCase):
         self.assertEqual(handler, AutoloadHandler)
         signal_map.remove(autoload_signal)
 
-    @override_settings(PYNOTIFY_AUTOLOAD_APPS=('example.tests.test_app2',))
+    @override_settings(PYNOTIFY_AUTOLOAD_MODULES=('example.tests.test_app2.handlers',))
     def test_if_autoload_fails_it_should_be_logged(self):
         with patch('pynotify.helpers.logger') as logger:
             autoload()

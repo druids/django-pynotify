@@ -83,9 +83,9 @@ All handlers are typically kept in file ``handlers.py`` in a dedicated applicati
 defined (or more specifically, imported), it is paired with the signal defined in handler's ``Meta``.
 
 Let's say you created ``notifications`` app with ``notifications/handlers.py``. In order for handlers to be
-automatically loaded, you must either set the ``PYNOTIFY_AUTOLOAD_APPS`` in project settings::
+automatically loaded, you must either set the ``PYNOTIFY_AUTOLOAD_MODULES`` in project settings::
 
-    PYNOTIFY_AUTOLOAD_APPS = ('notifications',)
+    PYNOTIFY_AUTOLOAD_MODULES = ('notifications.handlers',)
 
 or load handlers module manually when Django is ready, i.e. put following code to ``notifications/apps.py``::
 

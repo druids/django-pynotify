@@ -95,15 +95,15 @@ def receive(sender, **kwargs):
 
 def autoload():
     """
-    Attempts to load (import) notification handlers from apps defined in ``PYNOTIFY_AUTOLOAD_APPS``
+    Attempts to load (import) notification handlers from modules defined in ``PYNOTIFY_AUTOLOAD_MODULES``
     """
-    apps = settings.AUTOLOAD_APPS
-    if apps:
-        for app in apps:
+    modules = settings.AUTOLOAD_MODULES
+    if modules:
+        for module in modules:
             try:
-                import_module('{}.handlers'.format(app))
+                import_module(module)
             except ImportError:
-                logger.exception('Failed to autoload notification handlers from app {}'.format(app))
+                logger.exception('Failed to autoload notification handlers from module {}'.format(module))
 
 
 def process_task(handler_class, serializer_class, signal_kwargs):
