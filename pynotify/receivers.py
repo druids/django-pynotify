@@ -51,11 +51,15 @@ class AsynchronousReceiver(BaseReceiver):
              )
         return locate(celery_task)
 
+    def _get_celery_task_kwargs(self):
+        return {
+            'handler_class': get_import_path(self.handler_class),
+            'serializer_class': get_import_path(self.serializer_class),
+            'signal_kwargs': self.serializer_class().serialize(self.signal_kwargs),
+        }
+
     def receive(self, signal_kwargs):
+        self.signal_kwargs = signal_kwargs
         # Call of the Celery task should be performed after current DB transaction is commited to avoid race condition,
         # e.g. accessing referenced object in the task before it has finished saving into DB.
-        on_commit(lambda: self.celery_task.delay(
-            get_import_path(self.handler_class),
-            get_import_path(self.serializer_class),
-            self.serializer_class().serialize(signal_kwargs),
-        ))
+        on_commit(lambda: self.celery_task.delay(**self._get_celery_task_kwargs()))
