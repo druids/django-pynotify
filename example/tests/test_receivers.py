@@ -47,8 +47,16 @@ class AsynchronousReceiverTestCase(ReceiverTestMixin, TransactionTestCase):
         receiver.receive(self.signal_kwargs)
         commit()
 
-        receiver.celery_task.delay.assert_called_once_with(
-            'unittest.mock.MagicMock',
-            'pynotify.serializers.ModelSerializer',
-            receiver.serializer_class().serialize(self.signal_kwargs),
+        receiver.celery_task.delay.assert_called_with(
+            handler_class='unittest.mock.MagicMock',
+            serializer_class='pynotify.serializers.ModelSerializer',
+            signal_kwargs=receiver.serializer_class().serialize(self.signal_kwargs),
         )
+
+    @override_settings(PYNOTIFY_CELERY_TASK='tests.test_receivers.mock_task')
+    def test_receiver_should_allow_overriding_of_celery_task_kwargs(self):
+        receiver = AsynchronousReceiver(MagicMock)
+        receiver._get_celery_task_kwargs = MagicMock(return_value={'abc': 1})
+        receiver.receive(self.signal_kwargs)
+        commit()
+        receiver.celery_task.delay.assert_called_with(abc=1)

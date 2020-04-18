@@ -6,6 +6,7 @@ not released yet
 ----------------
 
 * Fix documentation
+* Allow overriding of Celery task kwargs (see ``_get_celery_task_kwargs()`` method)
 
 0.2.2 (2020-02-11)
 ------------------
