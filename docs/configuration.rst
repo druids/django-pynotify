@@ -6,10 +6,11 @@ Configuration
 
 You can configure the library in Django settings. Following options are available:
 
-* ``PYNOTIFY_AUTOLOAD_APPS`` (default: ``None``)
+* ``PYNOTIFY_AUTOLOAD_MODULES`` (default: ``None``)
 
-    Iterable of Django apps that will be scanned for ``handlers`` module at startup. If the module is found, it will be
-    imported, i.e. causing notification handlers to be automatically loaded.
+    Iterable of Python modules that contain notification handlers. These modules will be imported at startup, i.e.
+    causing notification handlers to be automatically registered. For example, if you have Django app ``notifications``
+    with handlers stored in ``handlers.py``, the module for autoload will be ``notifications.handlers``.
 
 * ``PYNOTIFY_CELERY_TASK`` (default: ``pynotify.tasks.notification_task``)
 

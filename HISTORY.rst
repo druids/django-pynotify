@@ -6,6 +6,8 @@ not released yet
 ----------------
 
 * Fix documentation
+* Change ``PYNOTIFY_AUTOLOAD_APPS`` to ``PYNOTIFY_AUTOLOAD_MODULES``, i.e. allow notification handlers to reside in
+  arbitrary module
 
 0.2.2 (2020-02-11)
 ------------------

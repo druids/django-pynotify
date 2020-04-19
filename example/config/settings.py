@@ -91,7 +91,7 @@ LOCALE_PATHS = [
     'locale',
 ]
 
-PYNOTIFY_AUTOLOAD_APPS = ('notifications',)
+PYNOTIFY_AUTOLOAD_MODULES = ('notifications.handlers',)
 
 # Uncomment following options to try asynchronous operation
 
