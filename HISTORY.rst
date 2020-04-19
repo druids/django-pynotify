@@ -2,8 +2,8 @@
 History
 =======
 
-not released yet
-----------------
+0.3.0 (2020-04-19)
+------------------
 
 * Fix documentation
 * Change ``PYNOTIFY_AUTOLOAD_APPS`` to ``PYNOTIFY_AUTOLOAD_MODULES``, i.e. allow notification handlers to reside in
