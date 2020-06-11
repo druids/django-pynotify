@@ -123,3 +123,31 @@ def get_import_path(_class):
     Returns import path for a given class.
     """
     return '{}.{}'.format(_class.__module__, _class.__name__)
+
+
+def get_from_context(variable, context):
+    """
+    Tries to find `variable` value in given `context`.
+
+    Args:
+        variable: Variable to look for. Template format is supported (e.g. "abc.def.ghi").
+        context: Template context.
+
+    Returns:
+        Variable value or None if not found.
+    """
+    value = context
+
+    for chunk in variable.split('.'):
+        try:
+            value = getattr(value, chunk)
+        except AttributeError:
+            try:
+                value = value.get(chunk)
+            except AttributeError:
+                return None
+
+        if value is None:
+            return None
+
+    return value

@@ -4,8 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.dispatch import Signal
 from django.test import TestCase, override_settings
 
-from pynotify.helpers import (DeletedRelatedObject, SecureRelatedObject, autoload, get_import_path, process_task,
-                              register, signal_map)
+from pynotify.helpers import (DeletedRelatedObject, SecureRelatedObject, autoload, get_from_context, get_import_path,
+                              process_task, register, signal_map)
 
 from .test_app.signals import autoload_signal
 
@@ -151,3 +151,18 @@ class HelpersTestCase(TestCase):
         self.assertEqual(str(obj), '[DELETED]')
         self.assertEqual(str(obj.x), '[DELETED]')
         self.assertEqual(str(obj.x.y), '[DELETED]')
+
+    def test_get_from_context_should_return_variable_value_or_none(self):
+        self.assertIsNone(get_from_context('a', {}))
+        self.assertIsNone(get_from_context('a.b', {}))
+
+        self.assertEqual(get_from_context('a', {'a': 1}), 1)
+        self.assertIsNone(get_from_context('a.b', {'a': 1}))
+
+        self.assertEqual(get_from_context('a', {'a': {'b': 1}}), {'b': 1})
+        self.assertEqual(get_from_context('a.b', {'a': {'b': 1}}), 1)
+
+        related_object = MockRelatedObject()
+        self.assertEqual(get_from_context('obj', {'obj': related_object}), related_object)
+        self.assertEqual(get_from_context('obj.b', {'obj': related_object}), 456)
+        self.assertIsNone(get_from_context('obj.non_sense', {'obj': related_object}))

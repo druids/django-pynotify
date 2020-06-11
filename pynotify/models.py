@@ -1,20 +1,20 @@
 import json
 import re
 
-from chamber.models import SmartModel, SmartModelBase
+from chamber.models import SmartModel, SmartModelBase, SmartQuerySet
 from django.conf import settings as django_settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.template.base import Context, Template
+from django.template import Context, Template
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _l
 
 from .config import settings
 from .exceptions import MissingContextVariableError
-from .helpers import DeletedRelatedObject, SecureRelatedObject
+from .helpers import DeletedRelatedObject, SecureRelatedObject, get_from_context
 
 
 class BaseModel(SmartModel):
@@ -105,16 +105,16 @@ class NotificationTemplate(BaseTemplate):
             template_string = _(template_string)
 
         if settings.TEMPLATE_CHECK:
-            vars = re.findall(r'{{ ?([^\.}]+)[^}]*}}', template_string)
+            vars = re.findall(r'{{ ?([^\|} ]+)[^}]*}}', template_string)
             for var in vars:
-                value = context.get(var)
+                value = get_from_context(var, context)
                 if value is None or isinstance(value, DeletedRelatedObject):
                     raise MissingContextVariableError(field, var)
 
         return Template('{}{}'.format(settings.TEMPLATE_PREFIX, template_string)).render(Context(context))
 
 
-class NotificationManager(models.Manager):
+class NotificationQuerySet(SmartQuerySet):
 
     def _create_related_object(self, notification, obj, name=None):
         if not isinstance(obj, models.Model):
@@ -139,6 +139,12 @@ class NotificationManager(models.Manager):
             notification.save()
 
         return notification
+
+    def filter_with_related_object(self, related_object):
+        return self.filter(
+            related_objects__content_type=ContentType.objects.get_for_model(related_object),
+            related_objects__object_id=str(related_object.pk),
+        )
 
 
 class NotificationMeta(SmartModelBase, type):
@@ -189,7 +195,7 @@ class Notification(BaseModel, metaclass=NotificationMeta):
     is_triggered = models.BooleanField(default=False, verbose_name=_l('is triggered'))
     extra_data = models.TextField(null=True, blank=True, verbose_name=_l('extra data'))
 
-    objects = NotificationManager()
+    objects = NotificationQuerySet.as_manager()
 
     class Meta:
         verbose_name = _l('notification')

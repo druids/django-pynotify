@@ -49,14 +49,27 @@ class NotificationTemplateTestCase(TestCase):
 
     @override_settings(PYNOTIFY_TEMPLATE_CHECK=True)
     def test_template_should_be_checked(self):
+        # check multiple types of missing variable
         with self.assertRaises(MissingContextVariableError):
             self.render('title', {})
-
         with self.assertRaises(MissingContextVariableError):
             self.render('title', {'article': None})
-
         with self.assertRaises(MissingContextVariableError):
             self.render('title', {'article': DeletedRelatedObject()})
+
+        # check multiple formats of single variable
+        for template in ('{{article}}', '{{ article }}', '{{ article|safe }}'):
+            self.template.change_and_save(text=template)
+            self.render('text', {'article': 'abc'})
+            with self.assertRaises(MissingContextVariableError):
+                self.render('text', {})
+
+        # check multiple formats of nested variable
+        for template in ('{{article.author}}', '{{ article.author }}', '{{ article.author|safe }}'):
+            self.template.change_and_save(text=template)
+            self.render('text', {'article': {'author': 'abc'}})
+            with self.assertRaises(MissingContextVariableError):
+                self.render('text', {'article': {}})
 
         # test with setting off
         with override_settings(PYNOTIFY_TEMPLATE_CHECK=False):
@@ -209,3 +222,10 @@ class NotificationTestCase(TestCase):
 
     def test_notification_should_have_string_representation(self):
         self.assertEqual(str(self.notification), 'notification #{}'.format(self.notification.pk))
+
+    def test_notification_should_be_filtered_with_related_object(self):
+        # random user is related object
+        self.assertEqual(Notification.objects.filter_with_related_object(self.random_user).count(), 1)
+        self.assertEqual(Notification.objects.filter_with_related_object(self.author)[0], self.notification)
+        # recipient is not related object
+        self.assertFalse(Notification.objects.filter_with_related_object(self.recipient).exists())
