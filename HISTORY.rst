@@ -2,6 +2,12 @@
 History
 =======
 
+not released yet
+----------------
+
+* Improve template variable checking
+* Add new filter ``filter_with_related_object``
+
 0.3.0 (2020-04-19)
 ------------------
 
