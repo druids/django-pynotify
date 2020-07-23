@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Add ``is_active`` flag to ``AdminNotificationTemplate`` model
+
 0.3.1 (2020-06-12)
 ------------------
 

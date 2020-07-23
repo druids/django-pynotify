@@ -54,8 +54,10 @@ class AdminNotificationTemplate(BaseTemplate):
 
     Attributes:
         slug: Template slug, with which this template can be referred to.
+        is_active: Flag that switches on/off creating notifications from this template.
     """
     slug = models.SlugField(max_length=200, unique=True, verbose_name=_l('slug'))
+    is_active = models.BooleanField(default=True, verbose_name=_l('is active'))
 
     class Meta:
         verbose_name = _l('admin notification template')

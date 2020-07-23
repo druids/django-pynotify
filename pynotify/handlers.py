@@ -60,15 +60,21 @@ class BaseHandler(metaclass=HandlerMeta):
     template_slug = None
 
     @cached_property
-    def _template(self):
+    def _admin_template(self):
         template_slug = self.get_template_slug()
         if template_slug:
-            admin_template = AdminNotificationTemplate.objects.get(slug=template_slug)
+            return AdminNotificationTemplate.objects.get(slug=template_slug)
+        else:
+            return None
+
+    @cached_property
+    def _template(self):
+        if self._admin_template:
             template, _ = NotificationTemplate.objects.get_or_create(
-                title=admin_template.title,
-                text=admin_template.text,
-                trigger_action=admin_template.trigger_action,
-                admin_template=admin_template,
+                title=self._admin_template.title,
+                text=self._admin_template.text,
+                trigger_action=self._admin_template.trigger_action,
+                admin_template=self._admin_template,
             )
         else:
             template, _ = NotificationTemplate.objects.get_or_create(**self.get_template_data())
@@ -120,7 +126,7 @@ class BaseHandler(metaclass=HandlerMeta):
         """
         Returns ``True`` if handler should handle creating of notification(s).
         """
-        return True
+        return not self._admin_template or self._admin_template.is_active
 
     def handle(self, signal_kwargs):
         """
