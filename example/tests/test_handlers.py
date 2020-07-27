@@ -154,3 +154,14 @@ class HandlerTestCase(TestCase):
         notification = self.user1.notifications.get()
         self.assertEqual(notification.template.admin_template, self.template)
         self.assertEqual(notification.title, 'Hello slug!')
+
+    def test_handler_should_respect_is_active_flag_of_admin_template(self):
+        # inactive admin template
+        self.template.change_and_save(is_active=False)
+        test_signal_slug.send(sender=MockSender, recipients=[self.user1])
+        self.assertEqual(self.user1.notifications.all().count(), 0)
+
+        # active admin template
+        self.template.change_and_save(is_active=True)
+        test_signal_slug.send(sender=MockSender, recipients=[self.user1])
+        self.assertEqual(self.user1.notifications.all().count(), 1)
