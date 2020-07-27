@@ -38,6 +38,6 @@ setup(
     name='django-pynotify',
     packages=find_packages(include=['pynotify']),
     url='https://github.com/druids/django-pynotify',
-    version='0.3.1',
+    version='0.3.2',
     zip_safe=False,
 )
