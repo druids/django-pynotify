@@ -2,6 +2,12 @@
 History
 =======
 
+0.3.3 (2020-08-12)
+------------------
+
+* Removed support of Django 1.11, 2.0 and 2.1
+* Fixed library requirements
+
 0.3.2 (2020-07-27)
 ------------------
 
