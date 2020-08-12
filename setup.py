@@ -12,9 +12,9 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'django >= 1.11',
+    'django >= 2.2',
     'django-chamber ~= 0.5.0',
-    'celery ~= 4.2.0',
+    'celery >= 4.2.0',
 ]
 
 setup(
