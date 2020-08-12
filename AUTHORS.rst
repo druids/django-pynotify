@@ -2,6 +2,9 @@
 Credits
 =======
 
+List of people who helped with development of this library. Feel free to add your name to the list, if you've made a
+contribution.
+
 Development Lead
 ----------------
 
@@ -10,4 +13,4 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Luboš Mátl
