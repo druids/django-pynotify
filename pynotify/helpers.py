@@ -2,6 +2,7 @@ from importlib import import_module
 import logging
 from pydoc import locate
 
+from bs4 import BeautifulSoup
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext as _
 
@@ -151,3 +152,10 @@ def get_from_context(variable, context):
             return None
 
     return value
+
+
+def strip_html(value):
+    """
+    Strips HTML (tags and entities) from string `value`.
+    """
+    return BeautifulSoup(value, 'lxml').get_text()

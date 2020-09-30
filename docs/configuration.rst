@@ -29,6 +29,10 @@ You can configure the library in Django settings. Following options are availabl
 
     A set of related object's attributes that can be used in notification template(s).
 
+* ``PYNOTIFY_STRIP_HTML`` (default: ``False``)
+
+    If set to ``True``, HTML tags and entities will be stripped off during notification rendering.
+
 * ``PYNOTIFY_TEMPLATE_CHECK`` (default: ``False``)
 
     Boolean indicating if template string should be checked before rendering. If any named related object or extra data
