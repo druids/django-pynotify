@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Add ``PYNOTIFY_STRIP_HTML`` config option
+
 0.4.0 (2020-08-12)
 ------------------
 

@@ -14,7 +14,7 @@ from django.utils.translation import ugettext_lazy as _l
 
 from .config import settings
 from .exceptions import MissingContextVariableError
-from .helpers import DeletedRelatedObject, SecureRelatedObject, get_from_context
+from .helpers import DeletedRelatedObject, SecureRelatedObject, get_from_context, strip_html
 
 
 class BaseModel(SmartModel):
@@ -113,7 +113,12 @@ class NotificationTemplate(BaseTemplate):
                 if value is None or isinstance(value, DeletedRelatedObject):
                     raise MissingContextVariableError(field, var)
 
-        return Template('{}{}'.format(settings.TEMPLATE_PREFIX, template_string)).render(Context(context))
+        output = Template('{}{}'.format(settings.TEMPLATE_PREFIX, template_string)).render(Context(context))
+
+        if settings.STRIP_HTML:
+            output = strip_html(output)
+
+        return output
 
 
 class NotificationQuerySet(SmartQuerySet):

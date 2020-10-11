@@ -43,9 +43,11 @@ class NotificationTemplateTestCase(TestCase):
     def render(self, field, context=None):
         return self.template.render(field, self.context if context is None else context)
 
-    def test_template_fields_should_be_rendered(self):
+    def test_template_fields_should_be_rendered_as_html(self):
+        self.context['article'].change_and_save(title='Good & Ugly')
         for field in NotificationTemplate.TEMPLATE_FIELDS:
-            self.assertEqual(self.render(field), 'New article: The Old Witch')
+            setattr(self.template, field, 'New article: <b>{{article}}</b>')
+            self.assertEqual(self.render(field), 'New article: <b>Good &amp; Ugly</b>')
 
     @override_settings(PYNOTIFY_TEMPLATE_CHECK=True)
     def test_template_should_be_checked(self):
@@ -107,6 +109,21 @@ class NotificationTemplateTestCase(TestCase):
         self.assertEqual(self.template.slug, None)
         self.template.admin_template = AdminNotificationTemplate.objects.create(title='Hello!', slug='test-template')
         self.assertEqual(self.template.slug, 'test-template')
+
+    @override_settings(PYNOTIFY_STRIP_HTML=True)
+    def test_template_should_strip_html_during_rendering_if_enabled(self):
+        for field in NotificationTemplate.TEMPLATE_FIELDS:
+            for input_value, output_value in [
+                (
+                    'My name is <b>John</b> and I like <a href="http://food.com">food</a>.',
+                    'My name is John and I like food.',
+                ),
+                ('<svg/onload=alert("XSS")>', ''),
+                ('Tom &amp; Jerry', 'Tom & Jerry'),
+                ('45&nbsp;USD', '45\xa0USD'),
+            ]:
+                setattr(self.template, field, input_value)
+                self.assertEqual(self.render(field), output_value)
 
 
 class NotificationTestCase(TestCase):

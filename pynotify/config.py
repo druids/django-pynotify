@@ -12,6 +12,7 @@ class Settings:
         'ENABLED': True,
         'RECEIVER': 'pynotify.receivers.SynchronousReceiver',
         'RELATED_OBJECTS_ALLOWED_ATTRIBUTES': {'get_absolute_url', },
+        'STRIP_HTML': False,
         'TEMPLATE_CHECK': False,
         'TEMPLATE_PREFIX': '',
         'TEMPLATE_TRANSLATE': False,
