@@ -25,6 +25,11 @@ You can configure the library in Django settings. Following options are availabl
 
     Import path to a receiver class.
 
+* ``PYNOTIFY_RECIPIENT_MODEL`` (default: ``settings.AUTH_USER_MODEL``)
+
+    Model used for recipient's foreign key on ``Notification`` model. Please note, that if you change this setting after
+    initial migration has been aplied, you might need to migrate the model manually.
+
 * ``PYNOTIFY_RELATED_OBJECTS_ALLOWED_ATTRIBUTES`` (default: ``{'get_absolute_url', }``)
 
     A set of related object's attributes that can be used in notification template(s).

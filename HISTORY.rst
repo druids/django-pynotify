@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Add ``PYNOTIFY_RECIPIENT_MODEL`` config option
+
 0.4.1 (2020-10-12)
 ------------------
 
