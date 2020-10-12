@@ -11,6 +11,7 @@ class Settings:
         'CELERY_TASK': 'pynotify.tasks.notification_task',
         'ENABLED': True,
         'RECEIVER': 'pynotify.receivers.SynchronousReceiver',
+        'RECIPIENT_MODEL': django_settings.AUTH_USER_MODEL,
         'RELATED_OBJECTS_ALLOWED_ATTRIBUTES': {'get_absolute_url', },
         'STRIP_HTML': False,
         'TEMPLATE_CHECK': False,

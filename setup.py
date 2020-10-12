@@ -11,12 +11,13 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
+# keep in sync with requirements_docs.txt
 requirements = [
-    'beautifulsoup4 ~=4.8.0',
-    'celery >= 4.2.0',
-    'django >= 2.2',
-    'django-chamber ~= 0.5.0',
-    'lxml ~= 4.5.0',
+    'beautifulsoup4==4.*',
+    'celery==4.*',
+    'django==2.*',
+    'django-chamber==0.*',
+    'lxml==4.*',
 ]
 
 setup(

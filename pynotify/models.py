@@ -2,7 +2,6 @@ import json
 import re
 
 from chamber.models import SmartModel, SmartModelBase, SmartQuerySet
-from django.conf import settings as django_settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
@@ -187,7 +186,7 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         extra_data: JSON serialized dictionary with extra data.
     """
     recipient = models.ForeignKey(
-        django_settings.AUTH_USER_MODEL,
+        settings.RECIPIENT_MODEL,
         related_name='notifications',
         on_delete=models.CASCADE,
         verbose_name=_l('recipient'),
