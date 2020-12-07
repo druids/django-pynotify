@@ -55,9 +55,12 @@ class AdminNotificationTemplate(BaseTemplate):
     Attributes:
         slug: Template slug, with which this template can be referred to.
         is_active: Flag that switches on/off creating notifications from this template.
+        send_push: Flag that switches on/off sending push notifications from this template.
+                   Currently, it has no effect on its own, but you can use it in your custom push notification solution.
     """
     slug = models.SlugField(max_length=200, unique=True, verbose_name=_l('slug'))
     is_active = models.BooleanField(default=True, verbose_name=_l('is active'))
+    send_push = models.BooleanField(default=False, verbose_name=_l('send push notification'))
 
     class Meta:
         verbose_name = _l('admin notification template')
