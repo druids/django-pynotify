@@ -44,8 +44,6 @@ msgid "is active"
 msgstr "je aktivní"
 
 #: models.py:63
-#, fuzzy
-#| msgid "notification"
 msgid "send push notification"
 msgstr "odesílat push notifikaci"
 

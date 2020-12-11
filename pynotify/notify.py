@@ -48,7 +48,7 @@ class NotifyHandler(BaseHandler):
         return self.signal_kwargs['template_slug']
 
     def get_dispatcher_classes(self):
-        return self.signal_kwargs['dispatcher_classes']
+        return self.signal_kwargs['dispatcher_classes'] or ()
 
     class Meta:
         signal = notify_signal

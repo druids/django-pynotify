@@ -2,6 +2,12 @@
 History
 =======
 
+0.4.2 (2020-12-11)
+------------------
+
+* Add ``send_push`` flag to ``AdminNotificationTemplate`` model
+* Ignore duplicit dispatcher classes in ``BaseHandler``
+
 0.4.1 (2020-10-12)
 ------------------
 

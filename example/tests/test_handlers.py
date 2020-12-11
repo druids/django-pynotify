@@ -40,7 +40,8 @@ class MockDispatcher(BaseDispatcher):
 
 class TestDataHandler(BaseHandler):
 
-    dispatcher_classes = (MockDispatcher,)
+    # two identical dispatcher classes are intentional, duplicates must be ignored
+    dispatcher_classes = (MockDispatcher, MockDispatcher)
 
     def get_recipients(self):
         return self.signal_kwargs['recipients']

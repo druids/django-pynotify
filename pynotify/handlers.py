@@ -56,7 +56,7 @@ class BaseHandler(metaclass=HandlerMeta):
         template_slug: Slug of an existing admin template to be used. If not defined, you must define
             ``get_template_data()`` method.
     """
-    dispatcher_classes = []
+    dispatcher_classes = ()
     template_slug = None
 
     @cached_property
@@ -83,10 +83,8 @@ class BaseHandler(metaclass=HandlerMeta):
 
     def _init_dispatchers(self):
         self.dispatchers = []
-        dispatcher_classes = self.get_dispatcher_classes()
-        if dispatcher_classes:
-            for dispatcher_class in dispatcher_classes:
-                self.dispatchers.append(self._init_dispatcher(dispatcher_class))
+        for dispatcher_class in set(self.get_dispatcher_classes()):
+            self.dispatchers.append(self._init_dispatcher(dispatcher_class))
 
     def _init_dispatcher(self, dispatcher_class):
         return dispatcher_class()
