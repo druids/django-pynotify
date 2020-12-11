@@ -56,7 +56,7 @@ class BaseHandler(metaclass=HandlerMeta):
         template_slug: Slug of an existing admin template to be used. If not defined, you must define
             ``get_template_data()`` method.
     """
-    dispatcher_classes = None
+    dispatcher_classes = []
     template_slug = None
 
     @cached_property

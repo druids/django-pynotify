@@ -14,3 +14,4 @@ Contributors
 ------------
 
 * Luboš Mátl
+* Petr Olah

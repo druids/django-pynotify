@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-23 14:04+0000\n"
+"POT-Creation-Date: 2020-12-09 13:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
 "<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
 
-#: helpers.py:42
+#: helpers.py:43
 msgid "[DELETED]"
 msgstr "[SMAZÁNO]"
 
@@ -35,66 +35,72 @@ msgstr "text"
 msgid "trigger action"
 msgstr "vyvolaná akce"
 
-#: models.py:58
+#: models.py:61
 msgid "slug"
 msgstr "slug"
 
-#: models.py:59
+#: models.py:62
 msgid "is active"
 msgstr "je aktivní"
 
-#: models.py:62 models.py:86
+#: models.py:63
+#, fuzzy
+#| msgid "notification"
+msgid "send push notification"
+msgstr "odesílat push notifikaci"
+
+#: models.py:66 models.py:90
 msgid "admin notification template"
 msgstr "administrační šablona notifikace"
 
-#: models.py:63
+#: models.py:67
 msgid "admin notification templates"
 msgstr "administrační šablony notifikací"
 
-#: models.py:92
+#: models.py:96
 msgid "notification template"
 msgstr "šablona notifikace"
 
-#: models.py:93
+#: models.py:97
 msgid "notification templates"
 msgstr "šablony notifikací"
 
-#: models.py:187
+#: models.py:196
 msgid "recipient"
 msgstr "příjemce"
 
-#: models.py:193
+#: models.py:202
 msgid "template"
 msgstr "šablona"
 
-#: models.py:195
+#: models.py:204
 msgid "is read"
 msgstr "je přečtená"
 
-#: models.py:196
+#: models.py:205
 msgid "is triggered"
 msgstr "je vyvolána akce"
 
-#: models.py:197
+#: models.py:206
 msgid "extra data"
 msgstr "extra data"
 
-#: models.py:202 models.py:268
+#: models.py:211 models.py:277
 msgid "notification"
 msgstr "notifikace"
 
-#: models.py:203
+#: models.py:212
 msgid "notifications"
 msgstr "notifikace"
 
-#: models.py:263
+#: models.py:272
 msgid "name"
 msgstr "jméno"
 
-#: models.py:270
+#: models.py:279
 msgid "content type"
 msgstr "druh obsahu"
 
-#: models.py:271
+#: models.py:280
 msgid "object ID"
 msgstr "ID objektu"
