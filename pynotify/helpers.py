@@ -157,5 +157,7 @@ def get_from_context(variable, context):
 def strip_html(value):
     """
     Strips HTML (tags and entities) from string `value`.
+    The space is added to remove BS warnings because value "http://django.pynotify.com"
+    will be considered as URL not as string in BS. The space will be removed with get_text method.
     """
-    return BeautifulSoup(value, 'lxml').get_text()
+    return BeautifulSoup(' ' + value, 'lxml').get_text()
