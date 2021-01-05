@@ -2,6 +2,13 @@
 History
 =======
 
+0.4.4 (2021-01-15)
+------------------
+
+* Add support for Python 3.9
+* Add support for Django 3
+* Fix BS4 warning
+
 0.4.3 (2020-12-16)
 ------------------
 
