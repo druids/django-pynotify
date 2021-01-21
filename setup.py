@@ -15,8 +15,8 @@ requirements = [
     'beautifulsoup4 ~=4.8.0',
     'celery >= 4.2.0',
     'django >= 2.2',
-    'django-chamber ~= 0.5.0',
-    'lxml ~= 4.5.0',
+    'django-chamber >= 0.5.0',
+    'lxml >= 4.6.2',
 ]
 
 setup(
