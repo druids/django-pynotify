@@ -2,6 +2,11 @@
 History
 =======
 
+0.4.6 (2021-08-31)
+------------------
+
+* Add ``is_locked`` field to ``AdminNotificationTemplate``
+
 0.4.5 (2021-01-21)
 ------------------
 
