@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-09 13:43+0000\n"
+"POT-Creation-Date: 2021-08-23 14:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,70 +35,74 @@ msgstr "text"
 msgid "trigger action"
 msgstr "vyvolaná akce"
 
-#: models.py:61
+#: models.py:62
 msgid "slug"
 msgstr "slug"
 
-#: models.py:62
+#: models.py:63
 msgid "is active"
 msgstr "je aktivní"
 
-#: models.py:63
+#: models.py:64
+msgid "is locked"
+msgstr "je zamčeno"
+
+#: models.py:65
 msgid "send push notification"
 msgstr "odesílat push notifikaci"
 
-#: models.py:66 models.py:90
+#: models.py:68 models.py:92
 msgid "admin notification template"
 msgstr "administrační šablona notifikace"
 
-#: models.py:67
+#: models.py:69
 msgid "admin notification templates"
 msgstr "administrační šablony notifikací"
 
-#: models.py:96
+#: models.py:98
 msgid "notification template"
 msgstr "šablona notifikace"
 
-#: models.py:97
+#: models.py:99
 msgid "notification templates"
 msgstr "šablony notifikací"
 
-#: models.py:196
+#: models.py:198
 msgid "recipient"
 msgstr "příjemce"
 
-#: models.py:202
+#: models.py:204
 msgid "template"
 msgstr "šablona"
 
-#: models.py:204
+#: models.py:206
 msgid "is read"
 msgstr "je přečtená"
 
-#: models.py:205
+#: models.py:207
 msgid "is triggered"
 msgstr "je vyvolána akce"
 
-#: models.py:206
+#: models.py:208
 msgid "extra data"
 msgstr "extra data"
 
-#: models.py:211 models.py:277
+#: models.py:213 models.py:279
 msgid "notification"
 msgstr "notifikace"
 
-#: models.py:212
+#: models.py:214
 msgid "notifications"
 msgstr "notifikace"
 
-#: models.py:272
+#: models.py:274
 msgid "name"
 msgstr "jméno"
 
-#: models.py:279
+#: models.py:281
 msgid "content type"
 msgstr "druh obsahu"
 
-#: models.py:280
+#: models.py:282
 msgid "object ID"
 msgstr "ID objektu"
