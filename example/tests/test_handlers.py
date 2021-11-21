@@ -124,12 +124,16 @@ class HandlerTestCase(TestCase):
                     signal = test_signal_data
                     allowed_senders = 123
 
-    def test_handler_should_not_be_automatically_registered_if_it_is_abstract(self):
+    def test_handler_should_not_be_automatically_registered_if_it_is_abstract_or_has_signal_set_to_none(self):
         map = copy(signal_map.map)
 
         class TestHandler(BaseHandler):
             class Meta:
                 abstract = True
+
+        class TestHandler2(BaseHandler):
+            class Meta:
+                signal = None
 
         self.assertEqual(signal_map.map, map)
 
@@ -184,3 +188,8 @@ class HandlerTestCase(TestCase):
         self.template.change_and_save(is_active=True)
         test_signal_slug.send(sender=MockSender, recipients=[self.user1])
         self.assertEqual(self.user1.notifications.all().count(), 1)
+
+    def test_handler_should_return_created_notifications(self):
+        notifications = TestSlugHandler().handle(signal_kwargs={'recipients': [self.user1]})
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0], self.user1.notifications.get())

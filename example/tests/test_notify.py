@@ -60,3 +60,8 @@ class NotifyTestCase(TestCase):
 
         with self.assertRaises(ValueError):
             notify(recipients=[self.user])
+
+    def test_notify_should_return_created_notifications(self):
+        notifications = notify(recipients=[self.user], template_slug='my-template')
+        self.assertEqual(len(notifications), 1)
+        self.assertEqual(notifications[0], self.user.notifications.get())

@@ -2,6 +2,12 @@
 History
 =======
 
+not released yet
+----------------
+
+* Allow handlers that are not paired with any signal
+* Return notifications created with ``notify`` helper function
+
 0.5.1 (2022-01-20)
 ------------------
 

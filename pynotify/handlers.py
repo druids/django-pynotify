@@ -23,8 +23,8 @@ class HandlerMeta(type):
                 # delete the abstract attribute so it is not inherited by child classes
                 delattr(new_class.Meta, 'abstract')
             else:
-                if not getattr(new_class, 'Meta', None) or not getattr(new_class.Meta, 'signal', None):
-                    raise ImproperlyConfigured('No signal defined in {}\'s Meta.'.format(name))
+                if not getattr(new_class, 'Meta', None) or not hasattr(new_class.Meta, 'signal'):
+                    raise ImproperlyConfigured('Missing "signal" attribute in {}\'s Meta.'.format(name))
 
                 if (
                     getattr(new_class.Meta, 'allowed_senders', None)
@@ -32,11 +32,12 @@ class HandlerMeta(type):
                 ):
                     raise ImproperlyConfigured('{}\'s attribute "allowed_senders" must be iterable.'.format(name))
 
-                register(
-                    signal=new_class.Meta.signal,
-                    handler_class=new_class,
-                    allowed_senders=getattr(new_class.Meta, 'allowed_senders', None),
-                )
+                if new_class.Meta.signal is not None:
+                    register(
+                        signal=new_class.Meta.signal,
+                        handler_class=new_class,
+                        allowed_senders=getattr(new_class.Meta, 'allowed_senders', None),
+                    )
 
         return new_class
 
@@ -132,6 +133,8 @@ class BaseHandler(metaclass=HandlerMeta):
         Handles creation of notifications from ``signal_kwargs``.
         """
         self.signal_kwargs = signal_kwargs
+        notifications = []
+
         if self._can_handle():
             self._init_dispatchers()
             for recipient in self.get_recipients():
@@ -140,6 +143,9 @@ class BaseHandler(metaclass=HandlerMeta):
                 if notification:
                     for dispatcher in self.dispatchers:
                         self._dispatch_notification(notification, dispatcher)
+                    notifications.append(notification)
+
+        return notifications
 
     def get_recipients(self):
         """
