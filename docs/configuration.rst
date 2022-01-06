@@ -44,4 +44,4 @@ You can configure the library in Django settings. Following options are availabl
 
 * ``PYNOTIFY_TEMPLATE_TRANSLATE`` (default: ``False``)
 
-    Boolean indicating if template string should be translated via ``ugettext()`` before rendering.
+    Boolean indicating if template string should be translated via ``gettext()`` before rendering.

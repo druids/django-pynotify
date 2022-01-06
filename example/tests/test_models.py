@@ -1,8 +1,11 @@
+import datetime
+import pytz
 from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
-from django.utils.translation import override, ugettext_noop
+from django.utils.translation import override, gettext_noop
+from chamber.exceptions import PersistenceException
 
 from pynotify.exceptions import MissingContextVariableError
 from pynotify.helpers import DeletedRelatedObject, SecureRelatedObject
@@ -27,11 +30,14 @@ class AdminNotificationTemplateTestCase(TestCase):
 class NotificationTemplateTestCase(TestCase):
 
     def setUp(self):
-        template = ugettext_noop('New article: {{article}}')
+        template = gettext_noop('New article: {{article}}')
 
         # set same template to all fields
         self.template = NotificationTemplate.objects.create(
-            **{field: template for field in NotificationTemplate.TEMPLATE_FIELDS}
+            **{
+                field: {'abc': template} if field == 'extra_fields' else template
+                for field in NotificationTemplate.TEMPLATE_FIELDS
+            }
         )
         self.context = {
             'article': Article.objects.create(
@@ -44,10 +50,17 @@ class NotificationTemplateTestCase(TestCase):
         return self.template.render(field, self.context if context is None else context)
 
     def test_template_fields_should_be_rendered_as_html(self):
+        TEMPLATE_STRING = 'New article: <b>{{article}}</b>'
+        RENDERED_STRING = 'New article: <b>Good &amp; Ugly</b>'
+
         self.context['article'].change_and_save(title='Good & Ugly')
+
         for field in NotificationTemplate.TEMPLATE_FIELDS:
-            setattr(self.template, field, 'New article: <b>{{article}}</b>')
-            self.assertEqual(self.render(field), 'New article: <b>Good &amp; Ugly</b>')
+            setattr(self.template, field, {'abc': TEMPLATE_STRING} if field == 'extra_fields' else TEMPLATE_STRING)
+            self.assertEqual(
+                self.render(field),
+                {'abc': RENDERED_STRING} if field == 'extra_fields' else RENDERED_STRING
+            )
 
     @override_settings(PYNOTIFY_TEMPLATE_CHECK=True)
     def test_template_should_be_checked(self):
@@ -60,16 +73,20 @@ class NotificationTemplateTestCase(TestCase):
             self.render('title', {'article': DeletedRelatedObject()})
 
         # check multiple formats of single variable
-        for template in ('{{article}}', '{{ article }}', '{{ article|safe }}'):
+        for template in ('Article: {{article}}', 'Article: {{ article }}', 'Article: {{ article|safe }}'):
             self.template.change_and_save(text=template)
-            self.render('text', {'article': 'abc'})
+            self.assertEqual(self.render('text', {'article': 'abc'}), 'Article: abc')
             with self.assertRaises(MissingContextVariableError):
                 self.render('text', {})
 
         # check multiple formats of nested variable
-        for template in ('{{article.author}}', '{{ article.author }}', '{{ article.author|safe }}'):
+        for template in (
+            'Author: {{article.author}}',
+            'Author: {{ article.author }}',
+            'Author: {{ article.author|safe }}',
+        ):
             self.template.change_and_save(text=template)
-            self.render('text', {'article': {'author': 'abc'}})
+            self.assertEqual(self.render('text', {'article': {'author': 'abc'}}), 'Author: abc')
             with self.assertRaises(MissingContextVariableError):
                 self.render('text', {'article': {}})
 
@@ -122,8 +139,16 @@ class NotificationTemplateTestCase(TestCase):
                 ('Tom &amp; Jerry', 'Tom & Jerry'),
                 ('45&nbsp;USD', '45\xa0USD'),
             ]:
+                if field == 'extra_fields':
+                    input_value = {'abc': input_value}
+                    output_value = {'abc': output_value}
+
                 setattr(self.template, field, input_value)
                 self.assertEqual(self.render(field), output_value)
+
+    def test_extra_fields_should_be_dictionary(self):
+        with self.assertRaises(PersistenceException):
+            self.template.change_and_save(extra_fields=1000)
 
 
 class NotificationTestCase(TestCase):
@@ -138,6 +163,7 @@ class NotificationTestCase(TestCase):
             title='{{article}}',
             text='{{author}} created a new article named {{article}}.',
             trigger_action='{{article.get_absolute_url}}',
+            extra_fields = {'abc': 'def:{{some_value}}'}
         )
 
         self.notification = Notification.objects.create(
@@ -151,6 +177,7 @@ class NotificationTestCase(TestCase):
             extra_data={
                 'some_value': 123,
                 'decimal_value': Decimal('1.55'),
+                'datetime': datetime.datetime(2022, 1, 1, 12, 0, 0, 0, pytz.UTC)
             }
         )
 
@@ -158,6 +185,7 @@ class NotificationTestCase(TestCase):
         self.assertEqual(self.notification.title, 'The Old Witch')
         self.assertEqual(self.notification.text, 'John created a new article named The Old Witch.')
         self.assertEqual(self.notification.trigger_action, '/articles/1/')
+        self.assertEqual(self.notification.extra_fields['abc'], 'def:123')
 
         self.author.username = 'James'
         self.author.save()
@@ -174,16 +202,15 @@ class NotificationTestCase(TestCase):
         self.assertEqual(self.notification.text, 'James created a new article named The King Of The Cats.')
 
     def test_extra_data_should_be_dictionary(self):
-        with self.assertRaises(ValueError):
-            self.notification.set_extra_data(1000)
+        with self.assertRaises(PersistenceException):
+            self.notification.change_and_save(extra_data=1000)
 
     def test_related_objects_and_extra_data_should_not_contain_same_keys(self):
-        self.notification.set_extra_data({'article': 123})
-        with self.assertRaises(ValueError):
-            self.notification.save()
+        with self.assertRaises(PersistenceException):
+            self.notification.change_and_save(extra_data={'article': 123})
 
     def test_context_should_contain_related_objects_as_proxies_and_extra_data(self):
-        ctx = self.notification.context
+        ctx = self.notification.refresh_from_db().context
 
         self.assertTrue(isinstance(ctx['article'], SecureRelatedObject))
         self.assertEqual(ctx['article']._object, self.article)
@@ -196,6 +223,7 @@ class NotificationTestCase(TestCase):
 
         self.assertEqual(ctx['some_value'], 123)
         self.assertEqual(ctx['decimal_value'], '1.55')
+        self.assertEqual(ctx['datetime'], '2022-01-01T12:00:00Z')
 
     def test_context_should_be_cached(self):
         self.assertEqual(

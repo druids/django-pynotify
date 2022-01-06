@@ -1,30 +1,29 @@
 from django.dispatch import Signal
 
 from .handlers import BaseHandler
+from .models import NotificationTemplate
 
 
-notify_signal = Signal(providing_args=['recipients', 'title', 'text', 'trigger_action', 'related_objects',
-                                       'extra_data', 'template_slug', 'dispatcher_classes'])
+notify_signal = Signal(providing_args=('recipients', 'related_objects', 'extra_data', 'template_slug',
+                                       'dispatcher_classes') + NotificationTemplate.TEMPLATE_FIELDS)
 
 
-def notify(recipients, title=None, text=None, trigger_action=None, related_objects=None, extra_data=None,
-           template_slug=None, dispatcher_classes=None):
+def notify(recipients, related_objects=None, extra_data=None, template_slug=None, dispatcher_classes=None,
+           **template_fields):
     """
     Helper method to create a notification. Simply sends the ``notify_signal``.
     """
-    if bool(template_slug) == (bool(title) | bool(text) | bool(trigger_action)):
+    if bool(template_slug) == any(template_fields.values()):
         raise ValueError('Either provide template slug or template data, not both.')
 
     notify_signal.send(
         sender=None,
         recipients=recipients,
-        title=title,
-        text=text,
-        trigger_action=trigger_action,
         related_objects=related_objects,
         extra_data=extra_data,
         template_slug=template_slug,
         dispatcher_classes=dispatcher_classes,
+        **template_fields,
     )
 
 
@@ -36,7 +35,7 @@ class NotifyHandler(BaseHandler):
         return self.signal_kwargs['recipients']
 
     def get_template_data(self):
-        return {x: self.signal_kwargs[x] for x in {'title', 'text', 'trigger_action'}}
+        return {x: self.signal_kwargs.get(x) for x in NotificationTemplate.TEMPLATE_FIELDS}
 
     def get_related_objects(self):
         return self.signal_kwargs['related_objects']

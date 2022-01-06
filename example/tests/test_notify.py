@@ -23,6 +23,7 @@ class NotifyTestCase(TestCase):
             title='{{greeting}} {{user}}!',
             text='Welcome to PyNotify!',
             trigger_action='http://localhost/',
+            extra_fields={'abc': 'def'},
             related_objects={'user': self.user},
             extra_data={'greeting': 'Hello'},
             dispatcher_classes=(MockDispatcher,)
@@ -33,7 +34,12 @@ class NotifyTestCase(TestCase):
         self.assertEqual(notification.title, 'Hello John!')
         self.assertEqual(notification.text, 'Welcome to PyNotify!')
         self.assertEqual(notification.trigger_action, 'http://localhost/')
+        self.assertEqual(notification.extra_fields['abc'], 'def')
         MockDispatcher.dispatch.assert_called_once_with(notification)
+
+    def test_notify_should_create_notification_with_minimal_input_data(self):
+        notify(recipients=[self.user], title='Hello!')
+        self.assertEqual(self.user.notifications.count(), 1)
 
     def test_notify_should_create_notification_from_existing_template(self):
         notify(
