@@ -44,10 +44,18 @@ class NotificationTemplateTestCase(TestCase):
         return self.template.render(field, self.context if context is None else context)
 
     def test_template_fields_should_be_rendered_as_html(self):
+        TEMPLATE_STRING = 'New article: <b>{{article}}</b>'
+        RENDERED_STRING = 'New article: <b>Good &amp; Ugly</b>'
+
         self.context['article'].change_and_save(title='Good & Ugly')
+
         for field in NotificationTemplate.TEMPLATE_FIELDS:
-            setattr(self.template, field, 'New article: <b>{{article}}</b>')
-            self.assertEqual(self.render(field), 'New article: <b>Good &amp; Ugly</b>')
+            if field == 'extra_fields':
+                self.template.set_extra_fields({'abc': TEMPLATE_STRING})
+                self.assertEqual(self.render('extra_fields')['abc'], RENDERED_STRING)
+            else:
+                setattr(self.template, field, TEMPLATE_STRING)
+                self.assertEqual(self.render(field), RENDERED_STRING)
 
     @override_settings(PYNOTIFY_TEMPLATE_CHECK=True)
     def test_template_should_be_checked(self):
@@ -122,8 +130,12 @@ class NotificationTemplateTestCase(TestCase):
                 ('Tom &amp; Jerry', 'Tom & Jerry'),
                 ('45&nbsp;USD', '45\xa0USD'),
             ]:
-                setattr(self.template, field, input_value)
-                self.assertEqual(self.render(field), output_value)
+                if field == 'extra_fields':
+                    self.template.set_extra_fields({'abc': input_value})
+                    self.assertEqual(self.render(field)['abc'], output_value)
+                else:
+                    setattr(self.template, field, input_value)
+                    self.assertEqual(self.render(field), output_value)
 
 
 class NotificationTestCase(TestCase):
@@ -139,6 +151,7 @@ class NotificationTestCase(TestCase):
             text='{{author}} created a new article named {{article}}.',
             trigger_action='{{article.get_absolute_url}}',
         )
+        self.template.set_extra_fields({'abc': 'abc:{{some_value}}'})
 
         self.notification = Notification.objects.create(
             recipient=self.recipient,
@@ -158,6 +171,7 @@ class NotificationTestCase(TestCase):
         self.assertEqual(self.notification.title, 'The Old Witch')
         self.assertEqual(self.notification.text, 'John created a new article named The Old Witch.')
         self.assertEqual(self.notification.trigger_action, '/articles/1/')
+        self.assertEqual(self.notification.extra_fields['abc'], 'abc:123')
 
         self.author.username = 'James'
         self.author.save()

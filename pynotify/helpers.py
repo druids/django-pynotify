@@ -1,9 +1,11 @@
-from importlib import import_module
+import json
 import logging
+from importlib import import_module
 from pydoc import locate
 
 from bs4 import BeautifulSoup
 from django.core.exceptions import ImproperlyConfigured
+from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
 
 from .config import settings
@@ -161,3 +163,12 @@ def strip_html(value):
     # The space is added to remove BS warnings because value "http://django.pynotify.com"
     # will be considered as URL not as string in BS. The space will be removed with get_text method.
     return BeautifulSoup(' ' + value, 'lxml').get_text()
+
+
+def json_dump_dict(value):
+    """
+    Dumps a dictionary into JSON using Django encoder.
+    """
+    if not isinstance(value, dict):
+        raise ValueError('Value must be a dictionary.')
+    return json.dumps(value, cls=DjangoJSONEncoder)

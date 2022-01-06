@@ -5,7 +5,7 @@ from django.dispatch import Signal
 from django.test import TestCase, override_settings
 
 from pynotify.helpers import (DeletedRelatedObject, SecureRelatedObject, autoload, get_from_context, get_import_path,
-                              process_task, register, signal_map)
+                              json_dump_dict, process_task, register, signal_map)
 
 from .test_app.signals import autoload_signal
 
@@ -166,3 +166,8 @@ class HelpersTestCase(TestCase):
         self.assertEqual(get_from_context('obj', {'obj': related_object}), related_object)
         self.assertEqual(get_from_context('obj.b', {'obj': related_object}), 456)
         self.assertIsNone(get_from_context('obj.non_sense', {'obj': related_object}))
+
+    def test_json_dump_dict_should_process_dictionary_only(self):
+        with self.assertRaises(ValueError):
+            json_dump_dict([1, 2])
+        self.assertEqual(json_dump_dict({'abc': '123'}), '{"abc": "123"}')

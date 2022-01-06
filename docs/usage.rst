@@ -159,6 +159,10 @@ In case you want to "freeze" the values used in template strings (i.e. not refle
 define :meth:`~pynotify.models.Notification.get_extra_data`, which should return a dict of JSON serizalizable values.
 These extra data are also put into template context, together with named related objects.
 
+If you need some extra fields, that are relevant to your use case, you can pass ``extra_fields``, which is
+expected to a be a flat dictionary of strings. These extra fields are also dynamically rendered, just like "standard"
+notification fields.
+
 Instead of using :meth:`~pynotify.handlers.BaseHandler.get_template_data`, you can define handler's attribute
 ``template_slug``. This is a better option in case you prefer to often change template strings via administration
 interface.  Note, that the admin template (:class:`~pynotify.models.AdminNotificationTemplate`) referenced by slug

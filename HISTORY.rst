@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Add ``extra_fields`` to ``BaseTemplate``
+
 0.4.6 (2021-08-31)
 ------------------
 

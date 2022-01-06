@@ -5,7 +5,6 @@ from chamber.models import SmartModel, SmartModelBase, SmartQuerySet
 from django.conf import settings as django_settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.template import Context, Template
 from django.utils.functional import cached_property
@@ -14,15 +13,40 @@ from django.utils.translation import ugettext_lazy as _l
 
 from .config import settings
 from .exceptions import MissingContextVariableError
-from .helpers import DeletedRelatedObject, SecureRelatedObject, get_from_context, strip_html
+from .helpers import DeletedRelatedObject, SecureRelatedObject, get_from_context, json_dump_dict, strip_html
 
 
-class BaseModel(SmartModel):
+class BaseModelMeta(SmartModelBase, type):
+    def __new__(cls, name, bases, attrs):
+        new_class = super().__new__(cls, name, bases, attrs)
+        for field in attrs.get('JSON_FIELDS', ()):
+            setattr(
+                new_class,
+                'set_{}'.format(field),
+                lambda self, value: self._set_json_field(field, value),
+            )
+            setattr(
+                new_class,
+                'get_{}'.format(field),
+                lambda self: self._get_json_field(field),
+            )
+
+        return new_class
+
+
+class BaseModel(SmartModel, metaclass=BaseModelMeta):
     """
     Base class for models that outpus its verbose name and PK.
     """
     def __str__(self):
         return '{} #{}'.format(self._meta.verbose_name, self.pk)
+
+    def _set_json_field(self, field, value):
+        setattr(self, field, json_dump_dict(value))
+
+    def _get_json_field(self, field):
+        value = getattr(self, field)
+        return json.loads(value) if value is not None else {}
 
     class Meta:
         abstract = True
@@ -36,11 +60,13 @@ class BaseTemplate(BaseModel):
         title: Title of the notification.
         text: Text of the notification.
         trigger_action: Arbitrary action performed when user triggers (i.e. clicks/taps) the notification.
+        extra_fields: Can be used to store additional fields needed in particular use case.
     """
     title = models.CharField(max_length=200, verbose_name=_l('title'))
     text = models.TextField(null=True, blank=True, verbose_name=_l('text'))
     trigger_action = models.CharField(max_length=2500, null=True, blank=True,
                                       verbose_name=_l('trigger action'))
+    extra_fields = models.TextField(null=True, blank=True, verbose_name=_l('extra fields'))
 
     class Meta:
         abstract = True
@@ -78,12 +104,10 @@ class NotificationTemplate(BaseTemplate):
     template string, that can be rendered using the ``render`` method.
 
     Attributes:
-        title: Title of the notification.
-        text: Text of the notification.
-        trigger_action: Arbitrary action performed when user triggers (i.e. clicks/taps) the notification.
         admin_template: Reference to admin template that was used to create this notification template.
     """
-    TEMPLATE_FIELDS = ['title', 'text', 'trigger_action']
+    TEMPLATE_FIELDS = ('title', 'text', 'trigger_action', 'extra_fields')
+    JSON_FIELDS = ('extra_fields',)
 
     admin_template = models.ForeignKey(
         AdminNotificationTemplate,
@@ -102,28 +126,43 @@ class NotificationTemplate(BaseTemplate):
     def slug(self):
         return self.admin_template.slug if self.admin_template else None
 
-    def render(self, field, context):
+    def _render_string(self, field, value, context):
         """
         Renders ``field`` using ``context``.
         """
-        template_string = getattr(self, field) or ''
-
         if settings.TEMPLATE_TRANSLATE:
-            template_string = _(template_string)
+            value = _(value)
 
         if settings.TEMPLATE_CHECK:
-            vars = re.findall(r'{{ ?([^\|} ]+)[^}]*}}', template_string)
+            vars = re.findall(r'{{ ?([^\|} ]+)[^}]*}}', value)
             for var in vars:
                 value = get_from_context(var, context)
                 if value is None or isinstance(value, DeletedRelatedObject):
                     raise MissingContextVariableError(field, var)
 
-        output = Template('{}{}'.format(settings.TEMPLATE_PREFIX, template_string)).render(Context(context))
+        output = Template('{}{}'.format(settings.TEMPLATE_PREFIX, value)).render(Context(context))
 
         if settings.STRIP_HTML:
             output = strip_html(output)
 
         return output
+
+    def _render_dict(self, dictionary, context):
+        rendered_dictionary = {}
+        for key in dictionary:
+            rendered_dictionary[key] = self._render_string(key, dictionary[key], context)
+        return rendered_dictionary
+
+    def render(self, field, context):
+        if field in self.JSON_FIELDS:
+            value = getattr(self, 'get_{}'.format(field))()
+        else:
+            value = getattr(self, field)
+
+        if isinstance(value, dict):
+            return self._render_dict(value, context)
+        else:
+            return self._render_string(field, value, context) if value is not None else ''
 
 
 class NotificationQuerySet(SmartQuerySet):
@@ -159,7 +198,7 @@ class NotificationQuerySet(SmartQuerySet):
         )
 
 
-class NotificationMeta(SmartModelBase, type):
+class NotificationMeta(BaseModelMeta, SmartModelBase, type):
     """
     Creates property for each template field. The property returns rendered template.
     """
@@ -191,6 +230,8 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         is_triggered: Boolean flag indicating that recipient has triggered the notification (e.g. clicked/tapped)
         extra_data: JSON serialized dictionary with extra data.
     """
+    JSON_FIELDS = ('extra_data',)
+
     recipient = models.ForeignKey(
         django_settings.AUTH_USER_MODEL,
         related_name='notifications',
@@ -239,26 +280,6 @@ class Notification(BaseModel, metaclass=NotificationMeta):
         Returns context dictionary used for rendering the template.
         """
         return {**self.related_objects_dict, **self.get_extra_data()}
-
-    def set_extra_data(self, extra_data):
-        """
-        Setter for ``extra_data`` field.
-
-        Arguments:
-            extra_data: Dictionary of JSON serializable values.
-        """
-        if not isinstance(extra_data, dict):
-            raise ValueError('Extra data must be a dictionary.')
-        self.extra_data = json.dumps(extra_data, cls=DjangoJSONEncoder)
-
-    def get_extra_data(self):
-        """
-        Getter for ``extra_data`` field.
-
-        Returns:
-            Dictionary with extra data.
-        """
-        return json.loads(self.extra_data) if self.extra_data is not None else {}
 
 
 class NotificationRelatedObject(BaseModel):

@@ -1,9 +1,10 @@
 from collections import Iterable
+from copy import copy
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import cached_property
 
-from .helpers import register
+from .helpers import json_dump_dict, register
 from .models import AdminNotificationTemplate, Notification, NotificationTemplate
 
 
@@ -74,10 +75,14 @@ class BaseHandler(metaclass=HandlerMeta):
                 title=self._admin_template.title,
                 text=self._admin_template.text,
                 trigger_action=self._admin_template.trigger_action,
+                extra_fields=self._admin_template.extra_fields,
                 admin_template=self._admin_template,
             )
         else:
-            template, _ = NotificationTemplate.objects.get_or_create(**self.get_template_data())
+            template_data = copy(self.get_template_data())
+            if 'extra_fields' in template_data:
+                template_data['extra_fields'] = json_dump_dict(template_data['extra_fields'])
+            template, _ = NotificationTemplate.objects.get_or_create(**template_data)
 
         return template
 
