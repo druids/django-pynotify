@@ -136,8 +136,8 @@ class NotificationTemplate(BaseTemplate):
         if settings.TEMPLATE_CHECK:
             vars = re.findall(r'{{ ?([^\|} ]+)[^}]*}}', value)
             for var in vars:
-                value = get_from_context(var, context)
-                if value is None or isinstance(value, DeletedRelatedObject):
+                found_var = get_from_context(var, context)
+                if found_var is None or isinstance(found_var, DeletedRelatedObject):
                     raise MissingContextVariableError(field, var)
 
         output = Template('{}{}'.format(settings.TEMPLATE_PREFIX, value)).render(Context(context))
