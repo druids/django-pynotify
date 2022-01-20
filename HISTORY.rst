@@ -2,6 +2,12 @@
 History
 =======
 
+not released yet
+----------------
+
+* Add ``extra_fields`` to ``BaseTemplate``
+* Use ``JSONField`` instead of ``TextField`` for JSON based fields
+
 0.4.6 (2021-08-31)
 ------------------
 

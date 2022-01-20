@@ -24,21 +24,21 @@ Notification templates can be translated using the standard Django translation m
 enable template translation by setting ``PYNOTIFY_TEMPLATE_TRANSLATE`` to ``True`` and include the translated messages
 in ``*.po`` files.
 
-You can use ``ugettext_noop()`` when defining template strings, so the string will be automatically included in the
+You can use ``gettext_noop()`` when defining template strings, so the string will be automatically included in the
 transaltion file(s)::
 
 
     def get_template_data(self):
         return {
-            'title': ugettext_noop('{{user}} viewed your article {{article}}'),
+            'title': gettext_noop('{{user}} viewed your article {{article}}'),
         }
 
 
-However keep in mind, that if you change the template string inside ``ugettext_noop()``, you either have to change the
+However keep in mind, that if you change the template string inside ``gettext_noop()``, you either have to change the
 corresponding notification template saved in the database (e.g. using data migration) or keep the old string
 in the translation file.
 
-In case you are using **template slugs**, just put ``ugettext_noop()`` anywhere in the code and keep it in sync with
+In case you are using **template slugs**, just put ``gettext_noop()`` anywhere in the code and keep it in sync with
 contents of the notification template saved in the database::
 
     class ArticleViewedHandler(BaseHandler):
@@ -46,7 +46,7 @@ contents of the notification template saved in the database::
         template_slug = 'article-viewed'
 
         # title translation
-        ugettext_noop('{{user}} viewed your article {{article}}')
+        gettext_noop('{{user}} viewed your article {{article}}')
 
 .. _async:
 

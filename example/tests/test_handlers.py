@@ -9,7 +9,7 @@ from django.test import TestCase
 from pynotify.dispatchers import BaseDispatcher
 from pynotify.handlers import BaseHandler
 from pynotify.helpers import signal_map
-from pynotify.models import AdminNotificationTemplate
+from pynotify.models import AdminNotificationTemplate, NotificationTemplate
 
 
 # MOCK OBJECTS ------------------------------------------------------------------------------------
@@ -47,7 +47,12 @@ class TestDataHandler(BaseHandler):
         return self.signal_kwargs['recipients']
 
     def get_template_data(self):
-        return {'title': 'Hello data!'}
+        return {
+            'title': 'Hello title!',
+            'text': 'Hello text!',
+            'trigger_action': 'http://localhost',
+            'extra_fields': {'abc': 'def'},
+        }
 
     def get_related_objects(self):
         return {'first_recipient': self.signal_kwargs['recipients'][0]}
@@ -89,7 +94,13 @@ class HandlerTestCase(TestCase):
         self.user1 = User.objects.create_user('Jack')
         self.user2 = User.objects.create_user('John')
         self.user3 = User.objects.create_user('James')
-        self.template = AdminNotificationTemplate.objects.create(title='Hello slug!', slug='test_slug')
+        self.template = AdminNotificationTemplate.objects.create(
+            title='Hello title!',
+            text='Hello text!',
+            trigger_action='http://localhost',
+            extra_fields={'abc': 'def'},
+            slug='test_slug',
+        )
 
     def test_handler_should_be_automatically_registered(self):
         self.assertEqual(signal_map.get(test_signal_data), [(TestDataHandler, None)])
@@ -131,8 +142,11 @@ class HandlerTestCase(TestCase):
             related_object = notification.related_objects.get()
 
             self.assertEqual(notification.recipient, user)
-            self.assertEqual(notification.title, 'Hello data!')
-            self.assertEqual(notification.get_extra_data(), {'some_value': 123})
+            self.assertEqual(notification.title, 'Hello title!')
+            self.assertEqual(notification.text, 'Hello text!')
+            self.assertEqual(notification.trigger_action, 'http://localhost')
+            self.assertEqual(notification.extra_fields, {'abc': 'def'})
+            self.assertEqual(notification.extra_data, {'some_value': 123})
             self.assertEqual(related_object.name, 'first_recipient')
             self.assertEqual(related_object.content_object, self.user1)
             if user.username == 'Jack':
@@ -143,6 +157,7 @@ class HandlerTestCase(TestCase):
         # Repeated notification should use the same template
         test_signal_data.send(sender=None, recipients=[self.user1])
         notifications = self.user1.notifications.all()
+        self.assertEqual(NotificationTemplate.objects.all().count(), 1)
         self.assertEqual(notifications[0].template, notifications[1].template)
 
         # Test _can_handle() method is used
@@ -154,7 +169,10 @@ class HandlerTestCase(TestCase):
         test_signal_slug.send(sender=MockSender, recipients=[self.user1])
         notification = self.user1.notifications.get()
         self.assertEqual(notification.template.admin_template, self.template)
-        self.assertEqual(notification.title, 'Hello slug!')
+        self.assertEqual(notification.title, 'Hello title!')
+        self.assertEqual(notification.text, 'Hello text!')
+        self.assertEqual(notification.trigger_action, 'http://localhost')
+        self.assertEqual(notification.extra_fields, {'abc': 'def'})
 
     def test_handler_should_respect_is_active_flag_of_admin_template(self):
         # inactive admin template

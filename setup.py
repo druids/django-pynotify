@@ -12,10 +12,10 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'beautifulsoup4 ~=4.8.0',
+    'beautifulsoup4 >=4.8.0',
     'celery >= 4.2.0',
-    'django >= 2.2',
-    'django-chamber >= 0.5.0',
+    'django ~= 3.0',
+    'django-chamber >= 0.6.13',
     'lxml >= 4.6.2',
 ]
 
