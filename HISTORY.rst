@@ -2,10 +2,9 @@
 History
 =======
 
-0.5.0 (2022-01-20)
+0.5.1 (2022-01-20)
 ------------------
 
-* Migrate ID fields to ``BigAutoField``
 * Use ``JSONField`` instead of ``TextField`` for JSON based fields
 * Add ``extra_fields`` to ``BaseTemplate``
 * Drop Django 2.x support

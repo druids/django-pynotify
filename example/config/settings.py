@@ -91,7 +91,7 @@ LOCALE_PATHS = [
     'locale',
 ]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 PYNOTIFY_AUTOLOAD_MODULES = ('notifications.handlers',)
 
