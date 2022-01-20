@@ -91,6 +91,8 @@ LOCALE_PATHS = [
     'locale',
 ]
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 PYNOTIFY_AUTOLOAD_MODULES = ('notifications.handlers',)
 
 # Uncomment following options to try asynchronous operation
