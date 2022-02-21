@@ -101,6 +101,14 @@ or load handlers module manually when Django is ready, i.e. put following code t
 
 Now, when you send the ``article_viewed`` signal, a new notification will be created for article author.
 
+.. note::
+   It is possible to set ``signal = None`` in handler's ``Meta``. In that case, the handler won't be paired with any
+   signal and it's up to you to call it directly. There are two use cases for this feature:
+
+       1. You want to use some custom signal mechanism, bypassing Django signals completely
+       2. You want to process created notifications outside of the handler (they are returned by handler's
+          ``handle`` method)
+
 Templates
 ---------
 
