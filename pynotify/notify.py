@@ -1,7 +1,7 @@
 from django.dispatch import Signal
 
 from .handlers import BaseHandler
-from .models import NotificationTemplate
+from .models import NotificationTemplate, TEMPLATE_FIELDS
 
 
 def notify(recipients, related_objects=None, extra_data=None, template_slug=None, dispatcher_classes=None,
@@ -31,7 +31,7 @@ class NotifyHandler(BaseHandler):
         return self.signal_kwargs['recipients']
 
     def get_template_data(self):
-        return {x: self.signal_kwargs.get(x) for x in NotificationTemplate.TEMPLATE_FIELDS}
+        return {x: self.signal_kwargs.get(x) for x in TEMPLATE_FIELDS}
 
     def get_related_objects(self):
         return self.signal_kwargs['related_objects']
