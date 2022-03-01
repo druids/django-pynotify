@@ -9,7 +9,7 @@ from chamber.exceptions import PersistenceException
 
 from pynotify.exceptions import MissingContextVariableError
 from pynotify.helpers import DeletedRelatedObject, SecureRelatedObject
-from pynotify.models import AdminNotificationTemplate, Notification, NotificationTemplate
+from pynotify.models import AdminNotificationTemplate, Notification, NotificationTemplate, TEMPLATE_FIELDS
 
 from articles.models import Article
 
@@ -36,7 +36,7 @@ class NotificationTemplateTestCase(TestCase):
         self.template = NotificationTemplate.objects.create(
             **{
                 field: {'abc': template} if field == 'extra_fields' else template
-                for field in NotificationTemplate.TEMPLATE_FIELDS
+                for field in TEMPLATE_FIELDS
             }
         )
         self.context = {
@@ -55,7 +55,7 @@ class NotificationTemplateTestCase(TestCase):
 
         self.context['article'].change_and_save(title='Good & Ugly')
 
-        for field in NotificationTemplate.TEMPLATE_FIELDS:
+        for field in TEMPLATE_FIELDS:
             setattr(self.template, field, {'abc': TEMPLATE_STRING} if field == 'extra_fields' else TEMPLATE_STRING)
             self.assertEqual(
                 self.render(field),
@@ -129,7 +129,7 @@ class NotificationTemplateTestCase(TestCase):
 
     @override_settings(PYNOTIFY_STRIP_HTML=True)
     def test_template_should_strip_html_during_rendering_if_enabled(self):
-        for field in NotificationTemplate.TEMPLATE_FIELDS:
+        for field in TEMPLATE_FIELDS:
             for input_value, output_value in [
                 (
                     'My name is <b>John</b> and I like <a href="http://food.com">food</a>.',

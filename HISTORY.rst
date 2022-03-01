@@ -2,6 +2,11 @@
 History
 =======
 
+not released yet
+----------------
+
+* Prevent duplicates of ``NotificationTemplate`` objects
+
 0.5.2 (2022-02-21)
 ------------------
 

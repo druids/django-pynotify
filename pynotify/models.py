@@ -17,6 +17,9 @@ from .exceptions import MissingContextVariableError
 from .helpers import DeletedRelatedObject, SecureRelatedObject, get_from_context, strip_html
 
 
+TEMPLATE_FIELDS = ('title', 'text', 'trigger_action', 'extra_fields')
+
+
 class BaseModel(SmartModel):
     """
     Base class for models that outpus its verbose name and PK.
@@ -86,7 +89,6 @@ class NotificationTemplate(BaseTemplate):
     Attributes:
         admin_template: Reference to admin template that was used to create this notification template.
     """
-    TEMPLATE_FIELDS = ('title', 'text', 'trigger_action', 'extra_fields')
 
     admin_template = models.ForeignKey(
         AdminNotificationTemplate,
@@ -100,6 +102,8 @@ class NotificationTemplate(BaseTemplate):
     class Meta:
         verbose_name = _l('notification template')
         verbose_name_plural = _l('notification templates')
+        # prevents duplicates in case of race condition (see BaseHandler._template)
+        unique_together = TEMPLATE_FIELDS + ('admin_template',)
 
     @property
     def slug(self):
@@ -178,7 +182,7 @@ class NotificationMeta(SmartModelBase, type):
     """
     def __new__(cls, name, bases, attrs):
         new_class = super().__new__(cls, name, bases, attrs)
-        for field in NotificationTemplate.TEMPLATE_FIELDS:
+        for field in TEMPLATE_FIELDS:
             setattr(
                 new_class,
                 field,
@@ -192,7 +196,7 @@ class Notification(BaseModel, metaclass=NotificationMeta):
     """
     Represents the notification.
 
-    Attributes specified in ``NotificationTemplate.TEMPLATE_FIELDS`` are also available here, as generated properties,
+    Attributes specified in ``TEMPLATE_FIELDS`` are also available here, as generated properties,
     that are evaluated at runtime and will return rendered field from the associated template. By default, the context
     used for rendering is filled with named related objects and extra data, so they can be referenced in the template by
     their name/key.
