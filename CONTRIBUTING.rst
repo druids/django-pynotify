@@ -90,12 +90,10 @@ Ready to contribute? Here's how to set up **Django PyNotify** for local developm
 
     $ make mo
 
-5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+5. When you're done making changes, check that your changes pass flake8 and the tests::
 
     $ make lint
     $ make test
-    $ make test-all
 
 6. Commit your changes and push your branch to GitHub::
 
