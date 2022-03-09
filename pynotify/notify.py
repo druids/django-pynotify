@@ -1,7 +1,5 @@
-from django.dispatch import Signal
-
 from .handlers import BaseHandler
-from .models import NotificationTemplate, TEMPLATE_FIELDS
+from .models import TEMPLATE_FIELDS
 
 
 def notify(recipients, related_objects=None, extra_data=None, template_slug=None, dispatcher_classes=None,

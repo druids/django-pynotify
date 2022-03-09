@@ -163,7 +163,7 @@ class NotificationTestCase(TestCase):
             title='{{article}}',
             text='{{author}} created a new article named {{article}}.',
             trigger_action='{{article.get_absolute_url}}',
-            extra_fields = {'abc': 'def:{{some_value}}'}
+            extra_fields={'abc': 'def:{{some_value}}'}
         )
 
         self.notification = Notification.objects.create(
