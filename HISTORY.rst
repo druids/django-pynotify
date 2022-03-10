@@ -6,6 +6,7 @@ not released yet
 ----------------
 
 * Migrate CI from Travis to Github Actions
+* Fix lint errors
 
 0.5.3 (2022-03-01)
 ------------------
