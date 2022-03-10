@@ -2,8 +2,8 @@
 History
 =======
 
-not released yet
-----------------
+0.5.4 (2022-03-10)
+------------------
 
 * Migrate CI from Travis to Github Actions
 * Fix lint errors
