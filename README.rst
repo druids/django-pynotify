@@ -22,7 +22,7 @@ General purpose notification library for Django.
 
 * Free software: MIT license
 * Documentation: https://django-pynotify.readthedocs.io.
-* Supported Python versions: 3.8, 3.9
+* Supported Python versions: 3.7, 3.8, 3.9, 3.10, 3.11
 * Supported Django versions: 3.1, 3.2
 
 .. Always make sure that versions are in sync with CI file
