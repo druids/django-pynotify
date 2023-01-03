@@ -15,11 +15,12 @@ requirements = [
     'beautifulsoup4 >=4.8.0',
     'celery >= 4.2.0',
     'django ~= 3.0',
-    'django-chamber >= 0.6.13',
+    'django-chamber >= 0.6.16',
     'lxml >= 4.6.2',
 ]
 
 setup(
+    python_requires=">=3.6",
     author="Ondřej Kulatý",
     author_email='kulaty.o@gmail.com',
     classifiers=[
@@ -30,6 +31,9 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     description="General purpose notification library for Django",
     install_requires=requirements,
