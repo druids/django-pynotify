@@ -14,8 +14,8 @@ from django.utils.translation import gettext_lazy as _l
 
 from .config import settings
 from .exceptions import MissingContextVariableError
-from .helpers import DeletedRelatedObject, SecureRelatedObject, get_from_context, strip_html
-
+from .helpers import (DeletedRelatedObject, SecureRelatedObject,
+                      get_from_context, strip_html)
 
 TEMPLATE_FIELDS = ('title', 'text', 'trigger_action', 'extra_fields')
 
@@ -69,6 +69,7 @@ class AdminNotificationTemplate(BaseTemplate):
             Currently, it has no effect on its own, but you can use it in your custom push notification solution.
     """
     slug = models.SlugField(max_length=200, unique=True, verbose_name=_l('slug'))
+    locale = models.CharField(verbose_name=_('locale'), max_length=10, null=True, blank=True, editable=False)
     is_active = models.BooleanField(default=True, verbose_name=_l('is active'))
     is_locked = models.BooleanField(null=False, blank=False, default=False, verbose_name=_l('is locked'))
     send_push = models.BooleanField(default=False, verbose_name=_l('send push notification'))

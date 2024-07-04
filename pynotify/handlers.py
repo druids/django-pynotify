@@ -59,12 +59,14 @@ class BaseHandler(metaclass=HandlerMeta):
     """
     dispatcher_classes = ()
     template_slug = None
+    locale = None
 
     @cached_property
     def _admin_template(self):
         template_slug = self.get_template_slug()
+        template_locale = self.get_template_locale()
         if template_slug:
-            return AdminNotificationTemplate.objects.get(slug=template_slug)
+            return AdminNotificationTemplate.objects.get(slug=template_slug, locale=template_locale)
         else:
             return None
 
@@ -177,6 +179,12 @@ class BaseHandler(metaclass=HandlerMeta):
         Returns slug of an admin template to be used.
         """
         return self.template_slug
+
+    def get_template_locale(self):
+        """
+        Returns locale of an admin template to be used.
+        """
+        return self.locale
 
     def get_dispatcher_classes(self):
         """
